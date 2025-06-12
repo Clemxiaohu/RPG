@@ -400,6 +400,7 @@
                 <button class="tab-button" data-mode="story">Quêtes d'Histoire</button>
                 <button class="tab-button" data-mode="forge">Forgeron</button>
                 <button class="tab-button" data-mode="dailyQuests">Quêtes Quotidiennes</button>
+                <button class="tab-button" data-mode="leaderboard">Classement</button> <!-- New Leaderboard Tab -->
             </div>
 
             <div class="w-full flex flex-col md:flex-row gap-6">
@@ -409,8 +410,8 @@
 
                     <!-- User Info & Global Stats (Always visible when logged in) -->
                     <div class="card mb-6">
-                        <h3 class="text-xl font-semibold text-gray-800">Votre ID Utilisateur:</h3>
-                        <p id="userIdDisplay" class="text-lg font-mono text-gray-600 break-all"></p>
+                        <h3 class="text-xl font-semibold text-gray-800">Joueur: <span id="playerNameDisplay" class="font-bold text-blue-700"></span></h3>
+                        <p id="userIdDisplay" class="text-sm font-mono text-gray-600 break-all"></p>
                         <button id="signOutButton" class="button-secondary mt-4">Déconnexion</button>
                     </div>
 
@@ -466,6 +467,7 @@
                         <div class="card p-5 mb-6">
                             <h3 class="text-xl font-bold text-gray-800 mb-4">Adversaire trouvé:</h3>
                             <div id="opponentDisplay" class="text-gray-700 mb-4">Cliquez sur "Rechercher" pour trouver un adversaire.</div>
+                            <p id="arenaSearchCost" class="text-sm text-gray-600 mb-2"></p>
                             <button id="findOpponentButton" class="button-primary w-full mb-2">Rechercher un adversaire</button>
                             <button id="startArenaBattleButton" class="button-primary w-full bg-red-500 hover:bg-red-600">
                                 Combattre !
@@ -578,6 +580,18 @@
                         </div>
                     </div>
 
+                    <!-- LEADERBOARD Mode Section -->
+                    <div id="leaderboardMode" class="game-mode-section">
+                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Classement des Héros</h2>
+                        <div class="card p-5 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Top 10 des Joueurs</h3>
+                            <ul id="leaderboardList" class="text-left text-gray-700 w-full">
+                                <!-- Leaderboard entries will be dynamically added here -->
+                                <li class="py-2 border-b border-gray-200 last:border-b-0">Chargement du classement...</li>
+                            </ul>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- Right Panels (Team & Inventory - Always visible) -->
@@ -632,6 +646,17 @@
         </div>
     </div>
 
+    <!-- Nickname Modal -->
+    <div id="nicknameModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Choisissez votre Pseudo</h2>
+            <p class="text-gray-700 mb-4">Ce pseudo sera visible par les autres joueurs dans le classement.</p>
+            <input type="text" id="nicknameInput" placeholder="Entrez votre pseudo" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full">
+            <button id="saveNicknameButton" class="button-primary mt-4">Sauvegarder Pseudo</button>
+        </div>
+    </div>
+
+
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -642,7 +667,7 @@
             signOut,
             onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, query, collection, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 
 
@@ -665,17 +690,19 @@
         let analytics;
         let userId = null; // Null initially, will be set on successful login
         let unsubscribeFromPlayerData = null; // To store the onSnapshot unsubscribe function
+        let unsubscribeFromLeaderboard = null; // To store the onSnapshot for leaderboard
         let currentHeroForLore = null; // To store the hero object when generating lore
         let currentMode = 'home'; // Tracks the active game mode tab
 
         // Player game state
+        let playerName = "Invité"; // Default player name
         let playerGold = 0; // Will be set to 5000 if new or reinitialized
         let playerHeroes = []; // Full hero objects, each with a unique 'id'
         let teamHeroIds = []; // Array of hero IDs currently in the team
         let goldToCollect = 0; // Gold accumulated by team, ready to be collected
 
         // New game mode specific states
-        let playerArenaStats = { wins: 0, losses: 0, points: 0 };
+        let playerArenaStats = { wins: 0, losses: 0, points: 0, dailySearches: 0, lastSearchReset: 0 }; // Added dailySearches and lastSearchReset
         let playerDungeonState = {
             active: false,
             currentFloor: 0,
@@ -710,9 +737,12 @@
         const DUNGEON_HEAL_COST = 500;
         const DUNGEON_MAX_FLOOR = 50; // Increased max dungeon floors
         const DUNGEON_FLOOR_GOLD_REWARD = 500; // Increased gold per floor cleared
+        const ARENA_FREE_SEARCHES_PER_DAY = 3;
+        const ARENA_PAID_SEARCH_COST = 100;
 
         let goldGenerationInterval; // To store the interval ID
         let dailyQuestTimerInterval; // For daily quest reset timer
+        let arenaSearchResetInterval; // For arena search reset timer
 
         // Hero data with rarity, placeholder images, and stats
         const HEROES_DATA = [
@@ -1075,6 +1105,7 @@
 
 
         // UI Element References
+        const playerNameDisplay = document.getElementById('playerNameDisplay'); // New for nickname
         const playerGoldSpan = document.getElementById('playerGold');
         const heroesOwnedSpan = document.getElementById('heroesOwned');
         const userIdDisplay = document.getElementById('userIdDisplay');
@@ -1123,6 +1154,7 @@
         const storyModeSection = document.getElementById('storyMode');
         const forgeModeSection = document.getElementById('forgeMode'); // New Forge mode section
         const dailyQuestsModeSection = document.getElementById('dailyQuestsMode'); // New Daily Quests mode section
+        const leaderboardModeSection = document.getElementById('leaderboardMode'); // New Leaderboard Mode Section
 
         // UI Elements for Arena
         const arenaWinsSpan = document.getElementById('arenaWins');
@@ -1133,6 +1165,7 @@
         const startArenaBattleButton = document.getElementById('startArenaBattleButton');
         const arenaResultDisplay = document.getElementById('arenaResultDisplay');
         const buyGoldButtons = document.querySelectorAll('.button-buy-gold');
+        const arenaSearchCostSpan = document.getElementById('arenaSearchCost'); // New for arena search cost
         let currentOpponent = null;
 
         // UI Elements for Dungeon
@@ -1177,6 +1210,14 @@
         const dailyQuestsListDiv = document.getElementById('dailyQuestsList');
         const dailyQuestResetTimerSpan = document.getElementById('dailyQuestResetTimer');
 
+        // UI Elements for Leaderboard Mode
+        const leaderboardList = document.getElementById('leaderboardList'); // New for leaderboard
+
+        // Nickname Modal Elements
+        const nicknameModal = document.getElementById('nicknameModal');
+        const nicknameInput = document.getElementById('nicknameInput');
+        const saveNicknameButton = document.getElementById('saveNicknameButton');
+
 
         /**
          * Initializes Firebase and sets up authentication.
@@ -1196,11 +1237,13 @@
                         // User is signed in.
                         userId = user.uid;
                         console.log("Firebase Auth User ID:", userId);
-                        userIdDisplay.textContent = user.email || user.displayName || userId; // Display email/name if available
+                        // Display email/name if available. Player name will be loaded from data.
+                        userIdDisplay.textContent = user.email || userId;
                         // Hide login UI, show game UI
                         authSection.classList.add('hidden');
                         gameContent.classList.remove('hidden');
                         startListeningForPlayerData();
+                        startListeningForLeaderboard(); // Start listening for leaderboard updates
                         startGoldGeneration(); // Start gold generation once user is authenticated
                         updateDungeonUI(); // Initial update for dungeon
                         updateArenaUI(); // Initial update for arena
@@ -1208,6 +1251,8 @@
                         updateForgeUI(); // Initial update for forge
                         checkAndResetDailyQuests(); // Check and reset daily quests
                         startDailyQuestTimer(); // Start daily quest timer
+                        checkAndResetArenaSearches(); // Check and reset arena searches
+                        startArenaSearchTimer(); // Start arena search reset timer
                         updateDailyQuestsUI(); // Initial update for daily quests
                         switchMode(currentMode); // Ensure the correct mode is shown on login
                     } else {
@@ -1215,6 +1260,7 @@
                         userId = null; // No user logged in
                         console.log("No user signed in. Displaying authentication options.");
                         userIdDisplay.textContent = "Non connecté";
+                        playerName = "Invité"; // Reset player name
                         // Show login UI, hide game UI
                         authSection.classList.remove('hidden');
                         gameContent.classList.add('hidden');
@@ -1223,7 +1269,7 @@
                         playerHeroes = [];
                         teamHeroIds = [];
                         goldToCollect = 0;
-                        playerArenaStats = { wins: 0, losses: 0, points: 0 };
+                        playerArenaStats = { wins: 0, losses: 0, points: 0, dailySearches: 0, lastSearchReset: 0 };
                         playerDungeonState = { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
                         playerStoryState = { currentChapter: 1, completedQuestIds: [] }; // Reset story state
                         playerDailyQuests = { lastReset: 0, quests: {} }; // Reset daily quests state
@@ -1232,6 +1278,10 @@
                             unsubscribeFromPlayerData();
                             unsubscribeFromPlayerData = null;
                         }
+                        if (unsubscribeFromLeaderboard) {
+                            unsubscribeFromLeaderboard();
+                            unsubscribeFromLeaderboard = null;
+                        }
                         if (goldGenerationInterval) {
                             clearInterval(goldGenerationInterval);
                             goldGenerationInterval = null;
@@ -1239,6 +1289,10 @@
                         if (dailyQuestTimerInterval) {
                             clearInterval(dailyQuestTimerInterval);
                             dailyQuestTimerInterval = null;
+                        }
+                        if (arenaSearchResetInterval) {
+                            clearInterval(arenaSearchResetInterval);
+                            arenaSearchResetInterval = null;
                         }
                         updateUI(); // Update UI to reflect logged-out state
                     }
@@ -1270,15 +1324,18 @@
             unsubscribeFromPlayerData = onSnapshot(playerDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                    playerName = data.playerName || ""; // Load player name
                     playerGold = data.gold || 0; // Load existing gold, default to 0 if not present
 
                     // NEW LOGIC: Grant starting gold if it's 0 and there are no heroes (suggests fresh or empty account)
                     // This prevents giving gold if user just spent it down to 0 but has heroes.
+                    // Also check for new player who might have some initial gold but no heroes.
                     if (playerGold === 0 && (!data.heroes || JSON.parse(data.heroes).length === 0)) {
                         playerGold = 5000;
                         console.log("Initialisation: 5000 Or accordés à un nouveau profil ou profil vide.");
                         savePlayerData(); // Save this initial grant
                     }
+
 
                     try {
                         // Ensure heroes array is parsed if it was stringified, and initialize upgradeLevel
@@ -1297,7 +1354,7 @@
                     goldToCollect = data.goldToCollect || 0;
 
                     // Load new game mode data
-                    playerArenaStats = data.arenaStats || { wins: 0, losses: 0, points: 0 };
+                    playerArenaStats = data.arenaStats || { wins: 0, losses: 0, points: 0, dailySearches: 0, lastSearchReset: 0 };
                     playerDungeonState = data.dungeonState || { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
                     playerStoryState = data.storyState || { currentChapter: 1, completedQuestIds: [] }; // Load story state
                     playerDailyQuests = data.dailyQuests || { lastReset: 0, quests: {} }; // Load daily quests state
@@ -1315,19 +1372,27 @@
                     }
 
                     console.log("Données du joueur chargées ou mises à jour:", { gold: playerGold, heroesCount: playerHeroes.length, teamCount: teamHeroIds.length, goldToCollect: goldToCollect, arena: playerArenaStats, dungeon: playerDungeonState, story: playerStoryState, dailyQuests: playerDailyQuests });
+
+                    // Prompt for nickname if not set
+                    if (!playerName) {
+                        showNicknameModal();
+                    }
+
                 } else {
                     // Document does not exist, initialize player data only if no data was found
                     console.log("Aucune donnée de joueur trouvée. Initialisation des données.");
+                    playerName = "Joueur" + Math.floor(Math.random() * 1000); // Default random name for new players
                     playerGold = 5000; // Starting gold for easier testing on new profiles
                     playerHeroes = [];
                     teamHeroIds = [];
                     goldToCollect = 0;
-                    playerArenaStats = { wins: 0, losses: 0, points: 0 };
+                    playerArenaStats = { wins: 0, losses: 0, points: 0, dailySearches: 0, lastSearchReset: Date.now() };
                     playerDungeonState = { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
                     playerStoryState = { currentChapter: 1, completedQuestIds: [] }; // Initialize story state
                     initializeDailyQuests(); // Initialize daily quests for a new player
                     // Save initial data to Firestore
                     savePlayerData(true); // Force save on first load
+                    showNicknameModal(); // Prompt for nickname on first load
                 }
                 updateUI(); // Always update UI after data changes
                 updateArenaUI(); // Update UI for arena
@@ -1335,11 +1400,38 @@
                 updateStoryUI(); // Update UI for story
                 updateForgeUI(); // Update UI for forge (dropdown options)
                 updateDailyQuestsUI(); // Update UI for daily quests
+                updateArenaSearchCostUI(); // Update search cost UI
             }, (error) => {
                 console.error("Erreur lors de l'écoute des données du joueur:", error);
                 showMessageBox("Erreur de chargement des données", "Impossible de charger vos données de jeu. Veuillez réessayer ou contacter le support.");
             });
         }
+
+        /**
+         * Starts real-time listening for leaderboard data using onSnapshot.
+         */
+        function startListeningForLeaderboard() {
+            // Unsubscribe from previous listener if exists
+            if (unsubscribeFromLeaderboard) {
+                unsubscribeFromLeaderboard();
+            }
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
+            const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/leaderboard`);
+            const q = query(leaderboardCollectionRef, orderBy("arenaPoints", "desc"), limit(10));
+
+            unsubscribeFromLeaderboard = onSnapshot(q, (snapshot) => {
+                const topPlayers = [];
+                snapshot.forEach(doc => {
+                    topPlayers.push(doc.data());
+                });
+                renderLeaderboard(topPlayers);
+            }, (error) => {
+                console.error("Erreur lors de l'écoute du classement:", error);
+                leaderboardList.innerHTML = `<li class="py-2 text-red-500">Impossible de charger le classement.</li>`;
+            });
+        }
+
 
         /**
          * Saves player data to Firestore.
@@ -1367,6 +1459,7 @@
 
             try {
                 await setDoc(playerDocRef, {
+                    playerName: playerName, // Save player name
                     gold: playerGold,
                     heroes: heroesToSave, // Store as string
                     teamHeroIds: teamIdsToSave,
@@ -1377,11 +1470,38 @@
                     dailyQuests: dailyQuestsToSave // Save daily quests state
                 });
                 console.log("Données du joueur sauvegardées avec succès.");
+                // Update leaderboard after player data is saved
+                updateLeaderboardEntry();
             } catch (error) {
                 console.error("Erreur lors de la sauvegarde des données du joueur:", error);
                 showMessageBox("Erreur de sauvegarde", "Impossible de sauvegarder vos données de jeu. Veuillez réessayer.");
             }
         }
+
+        /**
+         * Updates or creates the user's entry in the public leaderboard collection.
+         */
+        async function updateLeaderboardEntry() {
+            if (!userId || !db || !playerName) {
+                return; // Cannot update leaderboard if not logged in or no player name
+            }
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
+            const leaderboardDocRef = doc(db, `artifacts/${appId}/public/leaderboard/${userId}`);
+
+            try {
+                await setDoc(leaderboardDocRef, {
+                    userId: userId,
+                    playerName: playerName,
+                    arenaPoints: playerArenaStats.points,
+                    lastUpdated: Date.now()
+                }, { merge: true }); // Use merge to only update specified fields
+                console.log("Entrée du classement mise à jour.");
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour du classement:", error);
+            }
+        }
+
 
         /**
          * Handles Email/Password Sign-Up.
@@ -1448,6 +1568,36 @@
             }
         }
 
+        /**
+         * Shows the nickname input modal.
+         */
+        function showNicknameModal() {
+            nicknameModal.classList.add('show');
+            nicknameInput.value = playerName; // Pre-fill with current name if any
+            nicknameInput.focus();
+        }
+
+        /**
+         * Saves the chosen nickname.
+         */
+        async function saveNickname() {
+            const newName = nicknameInput.value.trim();
+            if (!newName) {
+                showMessageBox("Pseudo vide", "Veuillez entrer un pseudo valide.");
+                return;
+            }
+            if (newName.length > 20) {
+                showMessageBox("Pseudo trop long", "Le pseudo ne peut pas dépasser 20 caractères.");
+                return;
+            }
+
+            playerName = newName;
+            await savePlayerData(); // Save the new nickname
+            nicknameModal.classList.remove('show');
+            updateUI(); // Update UI to display the new name
+            showMessageBox("Pseudo enregistré", `Votre pseudo a été mis à jour en "${playerName}".`);
+        }
+
 
         /**
          * Calculates the total attack power of the current team.
@@ -1510,6 +1660,7 @@
          * Updates the UI elements based on current game state.
          */
         function updateUI() {
+            playerNameDisplay.textContent = playerName; // Display player name
             playerGoldSpan.textContent = playerGold;
             heroesOwnedSpan.textContent = playerHeroes.length;
             const teamPower = calculateTeamPower();
@@ -1872,7 +2023,7 @@
 
         /**
          * Switches between game modes.
-         * @param {string} mode - The mode to switch to ('home', 'expeditions', 'arena', 'dungeon', 'story', 'forge', 'dailyQuests').
+         * @param {string} mode - The mode to switch to ('home', 'expeditions', 'arena', 'dungeon', 'story', 'forge', 'dailyQuests', 'leaderboard').
          */
         function switchMode(mode) {
             currentMode = mode;
@@ -1893,6 +2044,9 @@
                 updateForgeUI();
             } else if (mode === 'dailyQuests') {
                 updateDailyQuestsUI();
+            } else if (mode === 'leaderboard') {
+                // Leaderboard is updated via onSnapshot, so just ensure it's displayed
+                // No explicit fetch needed here, it reacts to real-time updates
             }
         }
 
@@ -1900,9 +2054,68 @@
         // --- ARENA MODE LOGIC ---
 
         /**
+         * Checks if daily arena searches need to be reset and performs reset if necessary.
+         */
+        async function checkAndResetArenaSearches() {
+            const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+            const now = Date.now();
+
+            if (now - playerArenaStats.lastSearchReset >= oneDay) {
+                console.log("Réinitialisation des recherches d'arène quotidiennes...");
+                playerArenaStats.lastSearchReset = now;
+                playerArenaStats.dailySearches = 0;
+                await savePlayerData();
+                updateArenaSearchCostUI();
+            }
+        }
+
+        /**
+         * Updates the UI for arena search cost.
+         */
+        function updateArenaSearchCostUI() {
+            if (playerArenaStats.dailySearches < ARENA_FREE_SEARCHES_PER_DAY) {
+                arenaSearchCostSpan.textContent = `Recherches gratuites restantes: ${ARENA_FREE_SEARCHES_PER_DAY - playerArenaStats.dailySearches}`;
+            } else {
+                arenaSearchCostSpan.textContent = `Coût de la prochaine recherche: ${ARENA_PAID_SEARCH_COST} Or`;
+            }
+        }
+
+        /**
+         * Starts the interval to update arena search reset timer.
+         */
+        function startArenaSearchTimer() {
+            if (arenaSearchResetInterval) {
+                clearInterval(arenaSearchResetInterval);
+            }
+            arenaSearchResetInterval = setInterval(updateArenaSearchCostUI, 1000); // Update every second
+        }
+
+
+        /**
          * Generates a dummy opponent for arena battle.
          */
-        function findOpponent() {
+        async function findOpponent() {
+            if (!userId) {
+                showMessageBox("Non connecté", "Veuillez vous connecter pour combattre dans l'arène.");
+                return;
+            }
+
+            // Check and reset daily searches before attempting to find an opponent
+            await checkAndResetArenaSearches(); // Ensures counts are up-to-date
+
+            if (playerArenaStats.dailySearches < ARENA_FREE_SEARCHES_PER_DAY) {
+                playerArenaStats.dailySearches++;
+                console.log(`Recherche d'arène gratuite utilisée. Restant: ${ARENA_FREE_SEARCHES_PER_DAY - playerArenaStats.dailySearches}`);
+            } else {
+                if (playerGold < ARENA_PAID_SEARCH_COST) {
+                    showMessageBox("Pas assez d'or !", `Vous avez besoin de ${ARENA_PAID_SEARCH_COST} Or pour rechercher un adversaire.`);
+                    return;
+                }
+                playerGold -= ARENA_PAID_SEARCH_COST;
+                console.log(`Recherche d'arène payée. Or restant: ${playerGold}`);
+            }
+            
+            // Proceed with opponent generation
             const opponentNames = ["Ombre", "Fléau", "Titan", "Spectre", "Gardien", "Faucheur", "Berserker"];
             const randomName = opponentNames[Math.floor(Math.random() * opponentNames.length)];
             const playerPower = calculateTeamPower();
@@ -1917,6 +2130,10 @@
             opponentDisplay.textContent = `${currentOpponent.name} (Puissance: ${currentOpponent.power} ATK)`;
             startArenaBattleButton.classList.remove('hidden');
             arenaResultDisplay.textContent = '';
+
+            await savePlayerData(); // Save the updated daily searches/gold
+            updateArenaSearchCostUI(); // Update UI after change
+            updateUI(); // To refresh gold display
         }
 
         /**
@@ -1993,6 +2210,7 @@
                 opponentDisplay.textContent = "Cliquez sur \"Rechercher\" pour trouver un adversaire.";
                 startArenaBattleButton.classList.add('hidden');
             }
+            updateArenaSearchCostUI(); // Always update search cost UI
         }
 
 
@@ -2812,6 +3030,30 @@
             return parts.join(' ');
         }
 
+        // --- LEADERBOARD LOGIC ---
+        /**
+         * Renders the leaderboard in the UI.
+         * @param {Array<object>} topPlayers - An array of player objects sorted by arenaPoints.
+         */
+        function renderLeaderboard(topPlayers) {
+            leaderboardList.innerHTML = ''; // Clear current leaderboard
+
+            if (topPlayers.length === 0) {
+                leaderboardList.innerHTML = `<li class="py-2 text-gray-500">Aucun joueur dans le classement pour l'instant.</li>`;
+                return;
+            }
+
+            topPlayers.forEach((player, index) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('py-2', 'border-b', 'border-gray-200', 'last:border-b-0', 'flex', 'justify-between', 'items-center');
+                listItem.innerHTML = `
+                    <span class="font-semibold text-lg text-gray-800">#${index + 1} ${player.playerName || 'Anonyme'}</span>
+                    <span class="text-blue-600 font-bold">${player.arenaPoints} Points</span>
+                `;
+                leaderboardList.appendChild(listItem);
+            });
+        }
+
 
         /**
          * Sets up event listeners for buttons.
@@ -2827,6 +3069,14 @@
             signUpEmailButton.addEventListener('click', signUpWithEmail);
             signInEmailButton.addEventListener('click', signInWithEmail);
             signOutButton.addEventListener('click', signOutUser);
+
+            // Nickname Modal listeners
+            saveNicknameButton.addEventListener('click', saveNickname);
+            nicknameInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    saveNickname();
+                }
+            });
 
             // Gemini Lore Generation listeners
             generateLoreButtonLast.addEventListener('click', () => {
