@@ -318,6 +318,7 @@
             justify-content: center;
             margin-bottom: 20px;
             width: 100%;
+            flex-wrap: wrap; /* Allow tabs to wrap on smaller screens */
         }
         .tab-button {
             background-color: #e2e8f0;
@@ -329,6 +330,7 @@
             transition: all 0.2s ease;
             border: 1px solid #cbd5e0;
             border-bottom: none;
+            margin: 2px; /* Small margin for wrapped tabs */
         }
         .tab-button.active {
             background-color: #ffffff;
@@ -345,6 +347,22 @@
         }
         .game-mode-section.active {
             display: block;
+        }
+        #forgeHeroSelect {
+            appearance: none;
+            background-color: #f0f4f8;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.5rem;
+            padding: 10px 15px;
+            font-size: 1rem;
+            color: #4a5568;
+            cursor: pointer;
+            outline: none;
+            width: 100%;
+        }
+        #forgeHeroSelect:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
         }
     </style>
 </head>
@@ -377,10 +395,11 @@
         <div id="gameContent" class="hidden w-full flex flex-col items-center">
             <div id="gameModeTabs" class="flex justify-center mb-6">
                 <button class="tab-button active" data-mode="home">Accueil & Invocation</button>
-                <!-- Removed Expeditions Tab -->
                 <button class="tab-button" data-mode="arena">Arène</button>
                 <button class="tab-button" data-mode="dungeon">Donjon</button>
                 <button class="tab-button" data-mode="story">Quêtes d'Histoire</button>
+                <button class="tab-button" data-mode="forge">Forgeron</button>
+                <button class="tab-button" data-mode="dailyQuests">Quêtes Quotidiennes</button>
             </div>
 
             <div class="w-full flex flex-col md:flex-row gap-6">
@@ -410,13 +429,13 @@
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Invoquer un Héros</h2>
                             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                                 <button id="summonBasicButton" class="button-primary button-gacha-basic w-full sm:w-auto">
-                                    Gacha Basique (1000 Or)
+                                    Gacha Basique (5000 Or)
                                 </button>
                                 <button id="summonAdvancedButton" class="button-primary button-gacha-advanced w-full sm:w-auto">
-                                    Gacha Avancé (5000 Or)
+                                    Gacha Avancé (25000 Or)
                                 </button>
                                 <button id="summonLegendaryButton" class="button-primary button-gacha-legendary w-full sm:w-auto">
-                                    Gacha Légendaire (10000 Or)
+                                    Gacha Légendaire (50000 Or)
                                 </button>
                             </div>
 
@@ -457,14 +476,14 @@
                             <h3 class="text-xl font-bold text-gray-800 mb-4">Boutique d'Arène</h3>
                             <p class="text-sm text-gray-600 mb-4">Échangez vos points d'arène contre de l'or !</p>
                             <div class="flex flex-col gap-3 w-full">
-                                <button class="button-buy-gold w-full" data-arena-cost="100" data-gold-reward="5000">
-                                    100 Points d'Arène -> 5 000 Or
+                                <button class="button-buy-gold w-full" data-arena-cost="100" data-gold-reward="50000">
+                                    100 Points d'Arène -> 50 000 Or
                                 </button>
-                                <button class="button-buy-gold w-full" data-arena-cost="500" data-gold-reward="30000">
-                                    500 Points d'Arène -> 30 000 Or
+                                <button class="button-buy-gold w-full" data-arena-cost="500" data-gold-reward="300000">
+                                    500 Points d'Arène -> 300 000 Or
                                 </button>
-                                <button class="button-buy-gold w-full" data-arena-cost="1000" data-gold-reward="70000">
-                                    1 000 Points d'Arène -> 70 000 Or
+                                <button class="button-buy-gold w-full" data-arena-cost="1000" data-gold-reward="700000">
+                                    1 000 Points d'Arène -> 700 000 Or
                                 </button>
                             </div>
                         </div>
@@ -519,6 +538,43 @@
                             <ul id="completedStoryQuests" class="text-left text-gray-700 list-disc pl-5">
                                 <li>Aucune quête terminée pour l'instant.</li>
                             </ul>
+                        </div>
+                    </div>
+
+                    <!-- FORGE Mode Section -->
+                    <div id="forgeMode" class="game-mode-section">
+                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Le Forgeron</h2>
+                        <div class="card p-5 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Améliorer un Héros</h3>
+                            <p class="text-sm text-gray-600 mb-4">Sélectionnez un héros pour l'améliorer et augmenter ses statistiques.</p>
+                            <select id="forgeHeroSelect" class="p-3 border border-gray-300 rounded-lg w-full mb-4">
+                                <option value="">-- Sélectionnez un héros --</option>
+                            </select>
+
+                            <div id="selectedForgeHeroDisplay" class="hidden flex-col items-center gap-2 mb-4 p-3 bg-blue-50 rounded-lg">
+                                <img id="forgeHeroImage" class="w-20 h-20 rounded-full object-cover border-2 border-blue-400" src="https://placehold.co/80x80/A0AEC0/FFFFFF?text=?" alt="Héros à forger">
+                                <p class="text-lg font-bold text-blue-800" id="forgeHeroName"></p>
+                                <p class="text-md text-blue-700" id="forgeHeroRarity"></p>
+                                <p class="text-sm text-gray-700" id="forgeHeroCurrentStats"></p>
+                                <p class="text-sm text-gray-700">Niveau d'amélioration: <span id="forgeHeroUpgradeLevel" class="font-bold"></span></p>
+                                <p class="text-sm text-green-700 font-semibold" id="forgeHeroNextStats"></p>
+                            </div>
+
+                            <p class="text-md text-gray-800 mb-4">Coût d'amélioration: <span id="forgeCost" class="font-bold text-yellow-600">0</span> Or</p>
+                            <button id="upgradeHeroButton" class="button-primary w-full" disabled>Améliorer</button>
+                        </div>
+                    </div>
+
+                    <!-- DAILY QUESTS Mode Section -->
+                    <div id="dailyQuestsMode" class="game-mode-section">
+                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Quêtes Quotidiennes</h2>
+                        <div class="card p-5 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Quêtes du Jour</h3>
+                            <div id="dailyQuestsList" class="flex flex-col gap-3 text-left w-full">
+                                <!-- Daily quests will be dynamically added here -->
+                                <p>Chargement des quêtes...</p>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-4">Réinitialisation dans: <span id="dailyQuestResetTimer" class="font-bold"></span></p>
                         </div>
                     </div>
 
@@ -613,13 +669,12 @@
         let currentMode = 'home'; // Tracks the active game mode tab
 
         // Player game state
-        let playerGold = 0;
+        let playerGold = 0; // Will be set to 5000 if new or reinitialized
         let playerHeroes = []; // Full hero objects, each with a unique 'id'
         let teamHeroIds = []; // Array of hero IDs currently in the team
         let goldToCollect = 0; // Gold accumulated by team, ready to be collected
 
         // New game mode specific states
-        // Removed playerExpeditions
         let playerArenaStats = { wins: 0, losses: 0, points: 0 };
         let playerDungeonState = {
             active: false,
@@ -634,6 +689,18 @@
             currentChapter: 1,
             completedQuestIds: [] // Store IDs of completed quests
         };
+        // Forge state (no specific state, just heroes with upgradeLevel)
+        // Daily Quest state
+        const DAILY_QUESTS_DEFINITIONS = {
+            summonHero: { description: "Invoquer 1 Héros", target: 1, rewardGold: 5000 },
+            arenaWin: { description: "Gagner 1 Bataille d'Arène", target: 1, rewardGold: 7500 },
+            dungeonFloors: { description: "Terminer 3 Étages de Donjon", target: 3, rewardGold: 10000 },
+            storyQuest: { description: "Démarrer 1 Quête d'Histoire", target: 1, rewardGold: 12000 }
+        };
+        let playerDailyQuests = {
+            lastReset: 0, // Timestamp of last reset
+            quests: {} // { questType: { progress: number, completed: boolean, claimed: boolean } }
+        };
 
 
         // Constants for game mechanics
@@ -641,15 +708,15 @@
         const GOLD_GEN_FACTOR = 10; // Gold generated per team ATK point per "tick"
         const GOLD_GEN_INTERVAL_MS = 3000; // Generate gold every 3 seconds
         const DUNGEON_HEAL_COST = 500;
-        const DUNGEON_MAX_FLOOR = 10;
-        const DUNGEON_FLOOR_GOLD_REWARD = 200; // Gold per floor cleared
+        const DUNGEON_MAX_FLOOR = 50; // Increased max dungeon floors
+        const DUNGEON_FLOOR_GOLD_REWARD = 500; // Increased gold per floor cleared
 
         let goldGenerationInterval; // To store the interval ID
-        // Removed expeditionTimerInterval
+        let dailyQuestTimerInterval; // For daily quest reset timer
 
         // Hero data with rarity, placeholder images, and stats
         const HEROES_DATA = [
-            // Common (10 heroes)
+            // Existing Common (10 heroes)
             { name: "Guerrier Novice", rarity: "Common", stats: { atk: 10, def: 5, hp: 100 }, imageUrl: "https://placehold.co/100x100/808080/FFFFFF?text=G1" },
             { name: "Archère Débutante", rarity: "Common", stats: { atk: 8, def: 4, hp: 90 }, imageUrl: "https://placehold.co/100x100/808080/FFFFFF?text=A1" },
             { name: "Mage Apprenti", rarity: "Common", stats: { atk: 12, def: 3, hp: 80 }, imageUrl: "https://placehold.co/100x100/808080/FFFFFF?text=M1" },
@@ -661,7 +728,7 @@
             { name: "Forgeron Habile", rarity: "Common", stats: { atk: 10, def: 9, hp: 115 }, imageUrl: "https://placehold.co/100x100/808080/FFFFFF?text=F1" },
             { name: "Tisserande Discrète", rarity: "Common", stats: { atk: 7, def: 6, hp: 75 }, imageUrl: "https://placehold.co/100x100/708090/FFFFFF?text=T1" },
 
-            // Rare (15 heroes)
+            // Existing Rare (15 heroes)
             { name: "Chevalier Vaillant", rarity: "Rare", stats: { atk: 15, def: 10, hp: 120 }, imageUrl: "https://placehold.co/100x100/3182CE/FFFFFF?text=C1" },
             { name: "Chasseuse Agile", rarity: "Rare", stats: { atk: 18, def: 7, hp: 110 }, imageUrl: "https://placehold.co/100x100/3182CE/FFFFFF?text=H1" },
             { name: "Sorcier Arcane", rarity: "Rare", stats: { atk: 20, def: 6, hp: 100 }, imageUrl: "https://placehold.co/100x100/3182CE/FFFFFF?text=S1" },
@@ -678,7 +745,7 @@
             { name: "Barde Inspirant", rarity: "Rare", stats: { atk: 12, def: 7, hp: 100 }, imageUrl: "https://placehold.co/100x100/CD853F/FFFFFF?text=B2" },
             { name: "Maître des Bêtes", rarity: "Rare", stats: { atk: 18, def: 10, hp: 130 }, imageUrl: "https://placehold.co/100x100/8B4513/FFFFFF?text=M4" },
 
-            // Epic (15 heroes)
+            // Existing Epic (15 heroes)
             { name: "Dragonnier Ancien", rarity: "Epic", stats: { atk: 25, def: 15, hp: 150 }, imageUrl: "https://placehold.co/100x100/805AD5/FFFFFF?text=D2" },
             { name: "Maître Lame", rarity: "Epic", stats: { atk: 28, def: 12, hp: 140 }, imageUrl: "https://placehold.co/100x100/805AD5/FFFFFF?text=L2" },
             { name: "Prêtresse Lumière", rarity: "Epic", stats: { atk: 22, def: 18, hp: 130 }, imageUrl: "https://placehold.co/100x100/805AD5/FFFFFF?text=P3" },
@@ -695,7 +762,7 @@
             { name: "Valkyrie Guerrière", rarity: "Epic", stats: { atk: 27, def: 16, hp: 155 }, imageUrl: "https://placehold.co/100x100/DDA0DD/FFFFFF?text=V3" },
             { name: "Démolisseur Nain", rarity: "Epic", stats: { atk: 25, def: 24, hp: 195 }, imageUrl: "https://placehold.co/100x100/CD5C5C/FFFFFF?text=D3" },
 
-            // Legendary (15 heroes)
+            // Existing Legendary (15 heroes)
             { name: "Roi Mythique", rarity: "Legendary", stats: { atk: 40, def: 25, hp: 200 }, imageUrl: "https://placehold.co/100x100/D69E2E/FFFFFF?text=K1" },
             { name: "Reine Céleste", rarity: "Legendary", stats: { atk: 35, def: 30, hp: 180 }, imageUrl: "https://placehold.co/100x100/D69E2E/FFFFFF?text=Q1" },
             { name: "Démon Suprême", rarity: "Legendary", stats: { atk: 45, def: 20, hp: 190 }, imageUrl: "https://placehold.co/100x100/B22222/FFFFFF?text=D4" },
@@ -712,7 +779,7 @@
             { name: "Sentinelle Ancienne", rarity: "Legendary", stats: { atk: 39, def: 39, hp: 250 }, imageUrl: "https://placehold.co/100x100/7B68EE/FFFFFF?text=S7" },
             { name: "Tempête Vivante", rarity: "Legendary", stats: { atk: 47, def: 27, hp: 210 }, imageUrl: "https://placehold.co/100x100/4682B4/FFFFFF?text=T2" },
 
-            // Ancient (10 heroes)
+            // Existing Ancient (10 heroes)
             { name: "Chronos le Maître du Temps", rarity: "Ancient", stats: { atk: 60, def: 35, hp: 280 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=C4" },
             { name: "Bête Primordiale", rarity: "Ancient", stats: { atk: 65, def: 40, hp: 300 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=B3" },
             { name: "Esprit de la Création", rarity: "Ancient", stats: { atk: 58, def: 45, hp: 270 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=E4" },
@@ -724,7 +791,7 @@
             { name: "Champion Déchu", rarity: "Ancient", stats: { atk: 63, def: 37, hp: 295 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=C5" },
             { name: "Écho de l'Infini", rarity: "Ancient", stats: { atk: 61, def: 39, hp: 288 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=E5" },
 
-            // Divine (5 heroes)
+            // Existing Divine (5 heroes)
             { name: "Aspect de la Lumière", rarity: "Divine", stats: { atk: 75, def: 50, hp: 350 }, imageUrl: "https://placehold.co/100x100/00bcd4/FFFFFF?text=A5" },
             { name: "Avatar des Ténèbres", rarity: "Divine", stats: { atk: 80, def: 45, hp: 340 }, imageUrl: "https://placehold.co/100x100/00bcd4/FFFFFF?text=A6" },
             { name: "Le Tout-Puissant", rarity: "Divine", stats: { atk: 78, def: 48, hp: 360 }, imageUrl: "https://placehold.co/100x100/00bcd4/FFFFFF?text=T4" },
@@ -732,11 +799,43 @@
             { name: "Volonté Cosmique", rarity: "Divine", stats: { atk: 70, def: 55, hp: 370 }, imageUrl: "https://placehold.co/100x100/00bcd4/FFFFFF?text=V4" }
         ];
 
+        // Function to generate new heroes
+        function generateMoreHeroes(count, rarity, baseAtk, atkRange, baseDef, defRange, baseHp, hpRange, imageUrlPrefix) {
+            const newHeroes = [];
+            for (let i = 0; i < count; i++) {
+                const atk = baseAtk + Math.floor(Math.random() * atkRange);
+                const def = baseDef + Math.floor(Math.random() * defRange);
+                const hp = baseHp + Math.floor(Math.random() * hpRange);
+                newHeroes.push({
+                    name: `${rarity} Héros ${i + 1}`, // Generic name for generated heroes
+                    rarity: rarity,
+                    stats: { atk, def, hp },
+                    imageUrl: `https://placehold.co/100x100/${imageUrlPrefix}/${i + 1}`,
+                    upgradeLevel: 0 // Initialize upgrade level
+                });
+            }
+            return newHeroes;
+        }
+
+        // Add 100+ new heroes:
+        // Common: 30
+        HEROES_DATA.push(...generateMoreHeroes(30, "Common", 9, 7, 4, 5, 80, 40, "B0B0B0/FFFFFF?text=GC"));
+        // Rare: 25
+        HEROES_DATA.push(...generateMoreHeroes(25, "Rare", 18, 10, 7, 8, 100, 50, "4682B4/FFFFFF?text=GR"));
+        // Epic: 20
+        HEROES_DATA.push(...generateMoreHeroes(20, "Epic", 27, 12, 12, 10, 130, 60, "9370DB/FFFFFF?text=GE"));
+        // Legendary: 15
+        HEROES_DATA.push(...generateMoreHeroes(15, "Legendary", 40, 15, 20, 12, 180, 70, "FFD700/FFFFFF?text=GL"));
+        // Ancient: 7
+        HEROES_DATA.push(...generateMoreHeroes(7, "Ancient", 55, 20, 30, 15, 250, 80, "CD853F/FFFFFF?text=GA"));
+        // Divine: 3
+        HEROES_DATA.push(...generateMoreHeroes(3, "Divine", 70, 25, 40, 20, 300, 100, "00BFFF/FFFFFF?text=GD"));
+
 
         // Rarity probabilities for different gacha types
         const GACHA_TYPES = {
             "basic": {
-                cost: 1000,
+                cost: 5000, // Increased cost
                 probabilities: {
                     "Common": 0.60, // 60% chance
                     "Rare": 0.30,   // 30% chance
@@ -747,7 +846,7 @@
                 }
             },
             "advanced": {
-                cost: 5000,
+                cost: 25000, // Increased cost
                 probabilities: {
                     "Common": 0.30, // 30% chance
                     "Rare": 0.40,   // 40% chance
@@ -758,7 +857,7 @@
                 }
             },
             "legendary": {
-                cost: 10000,
+                cost: 50000, // Increased cost
                 probabilities: {
                     "Common": 0.00, // 0% chance
                     "Rare": 0.15,   // 15% chance
@@ -770,9 +869,7 @@
             }
         };
 
-        // Removed Expedition types and rewards
-
-        // Story Quests Data
+        // Story Quests Data - EXTENDED
         const STORY_QUESTS_DATA = [
             {
                 id: "quest1_ch1",
@@ -795,7 +892,7 @@
                 storyImage: "https://placehold.co/100x100/3182CE/FFFFFF?text=Montagne"
             },
             {
-                id: "quest1_ch2",
+                id: "quest3_ch2",
                 chapter: 2,
                 name: "L'Ombre du Seigneur des Abysses",
                 description: "Le Seigneur des Abysses a réveillé d'anciennes horreurs dans son domaine souterrain. Votre équipe doit l'explorer et l'arrêter avant que le monde ne soit englouti par les ténèbres.",
@@ -805,7 +902,7 @@
                 storyImage: "https://placehold.co/100x100/4B0082/FFFFFF?text=Abysses"
             },
             {
-                id: "quest2_ch2",
+                id: "quest4_ch2",
                 chapter: 2,
                 name: "Le Cœur du Volcan Endormi",
                 description: "Un volcan endormi montre des signes de réveil, et une entité primordiale s'y est nichée. Vous devez la sceller avant que la catastrophe ne dévaste la région.",
@@ -815,7 +912,7 @@
                 storyImage: "https://placehold.co/100x100/FF4500/FFFFFF?text=Volcan"
             },
             {
-                id: "quest1_ch3",
+                id: "quest5_ch3",
                 chapter: 3,
                 name: "Le Retour du Roi Déchu",
                 description: "Un ancien roi maléfique est revenu pour réclamer son trône, et son armée de morts-vivants menace tout. Mettez fin à son règne de terreur et restaurez la lumière.",
@@ -825,37 +922,37 @@
                 storyImage: "https://placehold.co/100x100/B22222/FFFFFF?text=Roi"
             },
             {
-                id: "quest2_ch3",
+                id: "quest6_ch3",
                 chapter: 3,
                 name: "La Source des Songes",
                 description: "Une entité mystérieuse manipule les rêves du royaume, plongeant les habitants dans un sommeil éternel. Il faut trouver la Source des Songes et la neutraliser.",
-                requiredPower: 850,
-                enemyPower: 900,
+                requiredPower: 900, // Increased
+                enemyPower: 950, // Increased
                 rewards: { gold: 1200000, items: ["Poussière de Rêve"], newHeroChance: "Legendary" },
                 storyImage: "https://placehold.co/100x100/9400D3/FFFFFF?text=Songes"
             },
             {
-                id: "quest1_ch4",
+                id: "quest7_ch4",
                 chapter: 4,
                 name: "Le Jugement des Anciens",
                 description: "Les esprits des Anciens sont agités par un déséquilibre cosmique. Vous devez prouver votre valeur et leur force pour apaiser leur courroux et rétablir l'ordre.",
-                requiredPower: 1000,
-                enemyPower: 1100,
+                requiredPower: 1100, // Increased
+                enemyPower: 1200, // Increased
                 rewards: { gold: 1500000, items: ["Pierre Ancestrale"], newHeroChance: "Ancient" },
                 storyImage: "https://placehold.co/100x100/cc5500/FFFFFF?text=Ancien"
             },
             {
-                id: "quest2_ch4",
+                id: "quest8_ch4",
                 chapter: 4,
                 name: "L'Éveil du Chaos",
                 description: "Des fissures apparaissent dans la réalité, libérant des fragments de chaos pur. Scellez les brèches et repoussez les abominations avant que le monde ne s'effondre.",
-                requiredPower: 1200,
-                enemyPower: 1300,
+                requiredPower: 1300, // Increased
+                enemyPower: 1400, // Increased
                 rewards: { gold: 1800000, items: ["Essence de Chaos"], newHeroChance: "Ancient" },
                 storyImage: "https://placehold.co/100x100/8B0000/FFFFFF?text=Chaos"
             },
             {
-                id: "quest1_ch5",
+                id: "quest9_ch5",
                 chapter: 5,
                 name: "La Lumière Éternelle",
                 description: "Une ombre cosmique menace d'engloutir toute lumière. Invoquez la lumière éternelle et affrontez l'obscurité pour sauver l'existence.",
@@ -863,6 +960,116 @@
                 enemyPower: 1600,
                 rewards: { gold: 2500000, items: ["Fragment de Lumière Divine"], newHeroChance: "Divine" },
                 storyImage: "https://placehold.co/100x100/00bcd4/FFFFFF?text=Lumiere"
+            },
+            {
+                id: "quest10_ch5",
+                chapter: 5,
+                name: "Le Nexus du Destin",
+                description: "Au cœur du Nexus, les fils du destin s'entremêlent. Une entité inconnue cherche à les manipuler. Protégez l'équilibre du monde.",
+                requiredPower: 1800,
+                enemyPower: 1900,
+                rewards: { gold: 3000000, items: ["Cristal de Destin"], newHeroChance: "Legendary" },
+                storyImage: "https://placehold.co/100x100/556B2F/FFFFFF?text=Nexus"
+            },
+            {
+                id: "quest11_ch6",
+                chapter: 6,
+                name: "Les Échos du Temps Perdu",
+                description: "Des anomalies temporelles perturbent le présent. Suivez les échos du passé pour corriger les erreurs et rétablir le flux du temps.",
+                requiredPower: 2200,
+                enemyPower: 2300,
+                rewards: { gold: 4000000, items: ["Sable Temporel"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/98FB98/FFFFFF?text=Temps"
+            },
+            {
+                id: "quest12_ch6",
+                chapter: 6,
+                name: "Le Sanctuaire Céleste",
+                description: "Un sanctuaire flottant, autrefois le foyer des esprits pur, est tombé sous l'emprise d'un mal céleste. Libérez-le de son emprise corruptrice.",
+                requiredPower: 2600,
+                enemyPower: 2700,
+                rewards: { gold: 5000000, items: ["Plume Céleste"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/87CEFA/FFFFFF?text=Sanctuaire"
+            },
+            {
+                id: "quest13_ch7",
+                chapter: 7,
+                name: "La Fureur des Géants",
+                description: "Des géants endormis se sont réveillés, menaçant de détruire des cités entières. Calmez leur fureur ou affrontez leur puissance colossale.",
+                requiredPower: 3000,
+                enemyPower: 3200,
+                rewards: { gold: 6000000, items: ["Éclat de Pierre Géante"], newHeroChance: "Legendary" },
+                storyImage: "https://placehold.co/100x100/A9A9A9/FFFFFF?text=Geants"
+            },
+            {
+                id: "quest14_ch7",
+                chapter: 7,
+                name: "Le Miroir de l'Âme",
+                description: "Un artefact ancien, le Miroir de l'Âme, corrompt ceux qui le regardent. Détruisez-le avant que son influence ne submerge le monde.",
+                requiredPower: 3500,
+                enemyPower: 3700,
+                rewards: { gold: 7500000, items: ["Poussière d'Âme"], newHeroChance: "Legendary" },
+                storyImage: "https://placehold.co/100x100/6A5ACD/FFFFFF?text=Miroir"
+            },
+            {
+                id: "quest15_ch8",
+                chapter: 8,
+                name: "Le Souffle du Dragon Ardent",
+                description: "Un dragon ancestral s'est réveillé dans les terres volcaniques, semant la destruction. Seule une équipe de légende pourra l'affronter et survivre.",
+                requiredPower: 4000,
+                enemyPower: 4200,
+                rewards: { gold: 9000000, items: ["Écaille de Dragon"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/FF6347/FFFFFF?text=Dragon"
+            },
+            {
+                id: "quest16_ch8",
+                chapter: 8,
+                name: "Les Lamentations des Esprits Oubliés",
+                description: "Un lieu hanté par des esprits tourmentés menace de déborder dans le monde des vivants. Apportez-leur la paix ou combattez leur désespoir.",
+                requiredPower: 4500,
+                enemyPower: 4700,
+                rewards: { gold: 11000000, items: ["Larme d'Esprit"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/2F4F4F/FFFFFF?text=Esprit"
+            },
+            {
+                id: "quest17_ch9",
+                chapter: 9,
+                name: "La Convergence des Mondes",
+                description: "Des dimensions commencent à fusionner, créant des créatures aberrantes. Rétablissez l'ordre cosmique avant que le tissu de la réalité ne se déchire.",
+                requiredPower: 5000,
+                enemyPower: 5200,
+                rewards: { gold: 13000000, items: ["Fragment Dimensionnel"], newHeroChance: "Legendary" },
+                storyImage: "https://placehold.co/100x100/483D8B/FFFFFF?text=Mondes"
+            },
+            {
+                id: "quest18_ch9",
+                chapter: 9,
+                name: "Le Gardien des Portes Étoilées",
+                description: "Un ancien gardien protège les portails vers d'autres étoiles, mais une force obscure le corrompt. Libérez-le pour voyager au-delà des confins connus.",
+                requiredPower: 5500,
+                enemyPower: 5700,
+                rewards: { gold: 15000000, items: ["Clé Stellaire"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/7B68EE/FFFFFF?text=Portails"
+            },
+            {
+                id: "quest19_ch10",
+                chapter: 10,
+                name: "L'Ascension du Mal Absolu",
+                description: "Le mal absolu rassemble ses forces pour plonger le monde dans les ténèbres éternelles. C'est le moment de la confrontation finale.",
+                requiredPower: 6000,
+                enemyPower: 6300,
+                rewards: { gold: 20000000, items: ["Cœur des Ténèbres"], newHeroChance: "Divine" },
+                storyImage: "https://placehold.co/100x100/000000/FFFFFF?text=Mal"
+            },
+            {
+                id: "quest20_ch10",
+                chapter: 10,
+                name: "Le Scellement du Grand Ancien",
+                description: "Au-delà des étoiles, le Grand Ancien attend son réveil pour dévorer la réalité. Seule une équipe avec des pouvoirs divins peut l'affronter et le sceller à jamais.",
+                requiredPower: 6500,
+                enemyPower: 6800,
+                rewards: { gold: 25000000, items: ["Sigil Divin", "Artefact Cosmique"], newHeroChance: "Divine" },
+                storyImage: "https://placehold.co/100x100/00bcd4/FFFFFF?text=AncienDivin"
             }
         ];
 
@@ -911,12 +1118,11 @@
         // UI Elements for Game Mode Navigation
         const gameModeTabs = document.querySelectorAll('.tab-button');
         const homeModeSection = document.getElementById('homeMode');
-        // Removed expeditionsModeSection
         const arenaModeSection = document.getElementById('arenaMode');
         const dungeonModeSection = document.getElementById('dungeonMode');
-        const storyModeSection = document.getElementById('storyMode'); // Keep Story Mode
-
-        // Removed UI Elements for Expeditions
+        const storyModeSection = document.getElementById('storyMode');
+        const forgeModeSection = document.getElementById('forgeMode'); // New Forge mode section
+        const dailyQuestsModeSection = document.getElementById('dailyQuestsMode'); // New Daily Quests mode section
 
         // UI Elements for Arena
         const arenaWinsSpan = document.getElementById('arenaWins');
@@ -954,6 +1160,23 @@
         const storyNarrativeDisplay = document.getElementById('storyNarrativeDisplay');
         const storyNarrativeLoading = document.getElementById('storyNarrativeLoading');
 
+        // UI Elements for Forge Mode
+        const forgeHeroSelect = document.getElementById('forgeHeroSelect');
+        const selectedForgeHeroDisplay = document.getElementById('selectedForgeHeroDisplay');
+        const forgeHeroImage = document.getElementById('forgeHeroImage');
+        const forgeHeroName = document.getElementById('forgeHeroName');
+        const forgeHeroRarity = document.getElementById('forgeHeroRarity');
+        const forgeHeroCurrentStats = document.getElementById('forgeHeroCurrentStats');
+        const forgeHeroUpgradeLevel = document.getElementById('forgeHeroUpgradeLevel');
+        const forgeHeroNextStats = document.getElementById('forgeHeroNextStats');
+        const forgeCost = document.getElementById('forgeCost');
+        const upgradeHeroButton = document.getElementById('upgradeHeroButton');
+        let selectedHeroForForge = null;
+
+        // UI Elements for Daily Quests Mode
+        const dailyQuestsListDiv = document.getElementById('dailyQuestsList');
+        const dailyQuestResetTimerSpan = document.getElementById('dailyQuestResetTimer');
+
 
         /**
          * Initializes Firebase and sets up authentication.
@@ -979,11 +1202,13 @@
                         gameContent.classList.remove('hidden');
                         startListeningForPlayerData();
                         startGoldGeneration(); // Start gold generation once user is authenticated
-                        // Removed startExpeditionTimer();
-                        // Removed updateExpeditionsUI();
                         updateDungeonUI(); // Initial update for dungeon
                         updateArenaUI(); // Initial update for arena
                         updateStoryUI(); // Initial update for story
+                        updateForgeUI(); // Initial update for forge
+                        checkAndResetDailyQuests(); // Check and reset daily quests
+                        startDailyQuestTimer(); // Start daily quest timer
+                        updateDailyQuestsUI(); // Initial update for daily quests
                         switchMode(currentMode); // Ensure the correct mode is shown on login
                     } else {
                         // User is signed out.
@@ -998,10 +1223,10 @@
                         playerHeroes = [];
                         teamHeroIds = [];
                         goldToCollect = 0;
-                        // Removed playerExpeditions = [];
                         playerArenaStats = { wins: 0, losses: 0, points: 0 };
                         playerDungeonState = { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
                         playerStoryState = { currentChapter: 1, completedQuestIds: [] }; // Reset story state
+                        playerDailyQuests = { lastReset: 0, quests: {} }; // Reset daily quests state
 
                         if (unsubscribeFromPlayerData) {
                             unsubscribeFromPlayerData();
@@ -1011,7 +1236,10 @@
                             clearInterval(goldGenerationInterval);
                             goldGenerationInterval = null;
                         }
-                        // Removed if (expeditionTimerInterval) { ... }
+                        if (dailyQuestTimerInterval) {
+                            clearInterval(dailyQuestTimerInterval);
+                            dailyQuestTimerInterval = null;
+                        }
                         updateUI(); // Update UI to reflect logged-out state
                     }
                 });
@@ -1042,10 +1270,24 @@
             unsubscribeFromPlayerData = onSnapshot(playerDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    playerGold = data.gold || 0;
+                    playerGold = data.gold || 0; // Load existing gold, default to 0 if not present
+
+                    // NEW LOGIC: Grant starting gold if it's 0 and there are no heroes (suggests fresh or empty account)
+                    // This prevents giving gold if user just spent it down to 0 but has heroes.
+                    if (playerGold === 0 && (!data.heroes || JSON.parse(data.heroes).length === 0)) {
+                        playerGold = 5000;
+                        console.log("Initialisation: 5000 Or accordés à un nouveau profil ou profil vide.");
+                        savePlayerData(); // Save this initial grant
+                    }
+
                     try {
-                        // Ensure heroes array is parsed if it was stringified
+                        // Ensure heroes array is parsed if it was stringified, and initialize upgradeLevel
                         playerHeroes = data.heroes ? JSON.parse(data.heroes) : [];
+                        playerHeroes.forEach(hero => {
+                            if (typeof hero.upgradeLevel === 'undefined') {
+                                hero.upgradeLevel = 0; // Initialize existing heroes with upgrade level
+                            }
+                        });
                         console.log("Héros chargés depuis Firestore:", playerHeroes.length, "héros.");
                     } catch (e) {
                         console.error("Erreur de parsing JSON pour les héros. Réinitialisation de l'inventaire.", e);
@@ -1055,31 +1297,44 @@
                     goldToCollect = data.goldToCollect || 0;
 
                     // Load new game mode data
-                    // Removed playerExpeditions = data.expeditions ? JSON.parse(data.expeditions) : [];
                     playerArenaStats = data.arenaStats || { wins: 0, losses: 0, points: 0 };
                     playerDungeonState = data.dungeonState || { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
                     playerStoryState = data.storyState || { currentChapter: 1, completedQuestIds: [] }; // Load story state
+                    playerDailyQuests = data.dailyQuests || { lastReset: 0, quests: {} }; // Load daily quests state
 
-                    console.log("Données du joueur chargées ou mises à jour:", { gold: playerGold, heroesCount: playerHeroes.length, teamCount: teamHeroIds.length, goldToCollect: goldToCollect, arena: playerArenaStats, dungeon: playerDungeonState, story: playerStoryState });
+                    // Ensure daily quests structure is consistent after load
+                    if (!playerDailyQuests.quests || Object.keys(playerDailyQuests.quests).length === 0) {
+                        initializeDailyQuests();
+                    } else {
+                        // Ensure all quests from definition exist in player data
+                        for (const key in DAILY_QUESTS_DEFINITIONS) {
+                            if (!playerDailyQuests.quests[key]) {
+                                playerDailyQuests.quests[key] = { progress: 0, completed: false, claimed: false };
+                            }
+                        }
+                    }
+
+                    console.log("Données du joueur chargées ou mises à jour:", { gold: playerGold, heroesCount: playerHeroes.length, teamCount: teamHeroIds.length, goldToCollect: goldToCollect, arena: playerArenaStats, dungeon: playerDungeonState, story: playerStoryState, dailyQuests: playerDailyQuests });
                 } else {
                     // Document does not exist, initialize player data only if no data was found
                     console.log("Aucune donnée de joueur trouvée. Initialisation des données.");
-                    playerGold = 10000; // Starting gold for easier testing on new profiles
+                    playerGold = 5000; // Starting gold for easier testing on new profiles
                     playerHeroes = [];
                     teamHeroIds = [];
                     goldToCollect = 0;
-                    // Removed playerExpeditions = [];
                     playerArenaStats = { wins: 0, losses: 0, points: 0 };
                     playerDungeonState = { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
                     playerStoryState = { currentChapter: 1, completedQuestIds: [] }; // Initialize story state
+                    initializeDailyQuests(); // Initialize daily quests for a new player
                     // Save initial data to Firestore
                     savePlayerData(true); // Force save on first load
                 }
                 updateUI(); // Always update UI after data changes
-                // Removed updateExpeditionsUI();
                 updateArenaUI(); // Update UI for arena
                 updateDungeonUI(); // Update UI for dungeon
                 updateStoryUI(); // Update UI for story
+                updateForgeUI(); // Update UI for forge (dropdown options)
+                updateDailyQuestsUI(); // Update UI for daily quests
             }, (error) => {
                 console.error("Erreur lors de l'écoute des données du joueur:", error);
                 showMessageBox("Erreur de chargement des données", "Impossible de charger vos données de jeu. Veuillez réessayer ou contacter le support.");
@@ -1100,10 +1355,10 @@
             // Stringify heroes array for Firestore storage, and new game mode data
             const heroesToSave = JSON.stringify(playerHeroes);
             const teamIdsToSave = teamHeroIds; // Already an array of strings
-            // Removed expeditionsToSave
             const arenaStatsToSave = playerArenaStats;
             const dungeonStateToSave = playerDungeonState;
             const storyStateToSave = playerStoryState; // Save story state
+            const dailyQuestsToSave = playerDailyQuests; // Save daily quests state
 
 
             // Construct the document path using __app_id or projectId
@@ -1116,10 +1371,10 @@
                     heroes: heroesToSave, // Store as string
                     teamHeroIds: teamIdsToSave,
                     goldToCollect: goldToCollect,
-                    // Removed expeditions: expeditionsToSave,
                     arenaStats: arenaStatsToSave,
                     dungeonState: dungeonStateToSave,
-                    storyState: storyStateToSave // Save story state
+                    storyState: storyStateToSave, // Save story state
+                    dailyQuests: dailyQuestsToSave // Save daily quests state
                 });
                 console.log("Données du joueur sauvegardées avec succès.");
             } catch (error) {
@@ -1210,12 +1465,11 @@
         }
 
         /**
-         * Checks if a hero is busy in an expedition, dungeon or story quest (but not necessarily just the main team).
+         * Checks if a hero is busy (e.g., in dungeon).
          * @param {string} heroId - The ID of the hero to check.
-         * @returns {boolean} True if the hero is busy in an expedition, dungeon or story quest, false otherwise.
+         * @returns {boolean} True if the hero is busy, false otherwise.
          */
-        function isHeroInExpeditionOrDungeon(heroId) {
-            // Only check for dungeon now that expeditions are removed
+        function isHeroBusy(heroId) {
             if (playerDungeonState.active && playerDungeonState.dungeonTeamHeroIds.includes(heroId)) return true;
             return false;
         }
@@ -1273,7 +1527,7 @@
             heroInventoryDiv.innerHTML = ''; // Clear current inventory display
 
             // Filter heroes to show only those NOT in the team
-            const heroesNotInTeam = playerHeroes.filter(hero => !teamHeroIds.includes(hero.id) && !isHeroInExpeditionOrDungeon(hero.id));
+            const heroesNotInTeam = playerHeroes.filter(hero => !teamHeroIds.includes(hero.id) && !isHeroBusy(hero.id));
             console.log('Heroes not in team (for inventory display):', heroesNotInTeam); // Debugging log
 
             if (heroesNotInTeam.length === 0) {
@@ -1289,12 +1543,12 @@
             heroesNotInTeam.forEach(hero => {
                 const heroCard = document.createElement('div');
                 heroCard.classList.add('card', 'p-3', 'no-hover');
-                const isBusyFlag = isHeroInExpeditionOrDungeon(hero.id); // Check if busy in other modes
+                const isBusyFlag = isHeroBusy(hero.id); // Check if busy in other modes
                 heroCard.innerHTML = `
                     <img class="w-16 h-16 rounded-full object-cover mb-2 border-2 border-gray-300" src="${hero.imageUrl}" onerror="this.onerror=null; this.src='https://placehold.co/80x80/A0AEC0/FFFFFF?text=?';" alt="${hero.name}">
                     <p class="text-md font-bold text-gray-800">${hero.name}</p>
                     <p class="text-sm font-semibold rarity-${hero.rarity.toLowerCase()}">${hero.rarity}</p>
-                    <p class="text-xs text-gray-600">ATK: ${hero.stats.atk} DEF: ${hero.stats.def} HP: ${hero.stats.hp}</p>
+                    <p class="text-xs text-gray-600">ATK: ${hero.stats.atk} DEF: ${hero.stats.def} HP: ${hero.stats.hp} (Niv.Amél: ${hero.upgradeLevel || 0})</p>
                     <button class="button-primary mt-2 text-xs w-full ${isBusyFlag ? 'opacity-50 cursor-not-allowed' : ''}" data-hero-id="${hero.id}" data-action="add" ${isBusyFlag ? 'disabled' : ''}>
                         ${isBusyFlag ? 'Occupé' : 'Ajouter à l\'équipe'}
                     </button>
@@ -1337,12 +1591,12 @@
                 const heroCard = document.createElement('div');
                 heroCard.classList.add('card', 'p-3', 'no-hover');
                 // Only disable if busy in dungeon
-                const isBusyInOtherModes = isHeroInExpeditionOrDungeon(hero.id);
+                const isBusyInOtherModes = isHeroBusy(hero.id);
                 heroCard.innerHTML = `
                         <img class="w-16 h-16 rounded-full object-cover mb-2 border-2 border-indigo-500" src="${hero.imageUrl}" onerror="this.onerror=null; this.src='https://placehold.co/80x80/A0AEC0/FFFFFF?text=?';" alt="${hero.name}">
                         <p class="text-md font-bold text-gray-800">${hero.name}</p>
                         <p class="text-sm font-semibold rarity-${hero.rarity.toLowerCase()}">${hero.rarity}</p>
-                        <p class="text-xs text-gray-600">ATK: ${hero.stats.atk} DEF: ${hero.stats.def} HP: ${hero.stats.hp}</p>
+                        <p class="text-xs text-gray-600">ATK: ${hero.stats.atk} DEF: ${hero.stats.def} HP: ${hero.stats.hp} (Niv.Amél: ${hero.upgradeLevel || 0})</p>
                         <button class="button-secondary mt-2 text-xs w-full ${isBusyInOtherModes ? 'opacity-50 cursor-not-allowed' : ''}" data-hero-id="${hero.id}" data-action="remove" ${isBusyInOtherModes ? 'disabled' : ''}>
                             ${isBusyInOtherModes ? 'Occupé' : 'Retirer'}
                         </button>
@@ -1367,7 +1621,7 @@
          */
         async function toggleHeroInTeam(hero) {
             // Prevent adding/removing heroes that are busy elsewhere
-            if (isHeroInExpeditionOrDungeon(hero.id) && !teamHeroIds.includes(hero.id)) {
+            if (isHeroBusy(hero.id) && !teamHeroIds.includes(hero.id)) {
                 showMessageBox("Héros occupé", `${hero.name} est actuellement occupé dans une autre activité (donjon) et ne peut pas être ajouté à l'équipe.`);
                 return;
             }
@@ -1421,11 +1675,12 @@
                 // Fallback: If no heroes of specific rarity, return a random hero from all data.
                 // This ensures the game doesn't break even if a rarity has no defined heroes.
                 const fallbackHero = HEROES_DATA[Math.floor(Math.random() * HEROES_DATA.length)];
-                return { ...fallbackHero, id: crypto.randomUUID() };
+                // Ensure the fallback also has upgradeLevel initialized
+                return { ...fallbackHero, id: crypto.randomUUID(), upgradeLevel: 0 };
             }
             const randomIndex = Math.floor(Math.random() * heroesOfRarity.length);
-            // Return a new object with a unique ID to avoid direct mutation of HEROES_DATA
-            return { ...heroesOfRarity[randomIndex], id: crypto.randomUUID() };
+            // Return a new object with a unique ID and initialized upgradeLevel
+            return { ...heroesOfRarity[randomIndex], id: crypto.randomUUID(), upgradeLevel: 0 };
         }
 
         /**
@@ -1443,7 +1698,7 @@
             const cost = gachaInfo.cost;
             
             if (playerGold < cost) {
-                showMessageBox("Pas assez d'Or !", `Vous avez besoin de ${cost} Or pour cette invocation. Gagnez-en avec votre équipe !`);
+                showMessageBox("Pas assez d'Or !", `Vous avez besoin de ${cost} Or pour cette invocation. Gagnez-en avec votre équipe ou dans les quêtes !`);
                 return;
             }
 
@@ -1459,6 +1714,8 @@
             await savePlayerData(); // Ensure data is saved before UI updates
             console.log("playerHeroes après sauvegarde:", playerHeroes);
 
+            // Update daily quest for summoning
+            updateDailyQuestProgress('summonHero', 1);
 
             // Show last summoned hero display
             lastSummonedHeroDiv.classList.remove('hidden');
@@ -1471,7 +1728,7 @@
             summonedHeroName.textContent = newHero.name;
             summonedHeroRarity.textContent = newHero.rarity;
             summonedHeroRarity.className = `text-lg font-semibold rarity-${newHero.rarity.toLowerCase()}`;
-            summonedHeroStats.textContent = `ATK: ${newHero.stats.atk} DEF: ${newHero.stats.def} HP: ${newHero.stats.hp}`;
+            summonedHeroStats.textContent = `ATK: ${newHero.stats.atk} DEF: ${newHero.stats.def} HP: ${newHero.stats.hp} (Niv.Amél: ${newHero.upgradeLevel || 0})`;
             
             // Clear previous lore
             loreDisplayLast.textContent = '';
@@ -1497,7 +1754,7 @@
             modalHeroName.textContent = hero.name;
             modalHeroRarity.textContent = hero.rarity;
             modalHeroRarity.className = `text-xl font-semibold rarity-${hero.rarity.toLowerCase()}`;
-            modalHeroStats.textContent = `ATK: ${hero.stats.atk} DEF: ${hero.stats.def} HP: ${hero.stats.hp}`;
+            modalHeroStats.textContent = `ATK: ${hero.stats.atk} DEF: ${hero.stats.def} HP: ${hero.stats.hp} (Niv.Amél: ${hero.upgradeLevel || 0})`;
             
             // Set the current hero for lore generation in the modal
             currentHeroForLore = hero;
@@ -1530,7 +1787,7 @@
             displayElement.textContent = ''; // Clear previous lore
             loadingElement.classList.remove('hidden'); // Show loading spinner
 
-            const prompt = `Écrivez une courte biographie ou une histoire pour un héros de jeu de rôle. Le héros s'appelle ${hero.name}, sa rareté est ${hero.rarity}, et il a ${hero.stats.atk} ATK, ${hero.stats.def} DEF et ${hero.stats.hp} HP. L'histoire doit être fantastique et captivante, se déroulant dans un monde médiéval-fantastique, et doit mettre en valeur son rôle, ses exploits ou ses particularités liées à sa rareté et ses statistiques. La longueur doit être d'environ 70-100 mots.`;
+            const prompt = `Écrivez une courte biographie ou une histoire pour un héros de jeu de rôle. Le héros s'appelle ${hero.name}, sa rareté est ${hero.rarity}, et il a ${hero.stats.atk} DEF et ${hero.stats.hp} HP. L'histoire doit être fantastique et captivante, se déroulant dans un monde médiéval-fantastique, et doit mettre en valeur son rôle, ses exploits ou ses particularités liées à sa rareté et ses statistiques. La longueur doit être d'environ 70-100 mots.`;
             
             let chatHistory = [];
             chatHistory.push({ role: "user", parts: [{ text: prompt }] });
@@ -1615,7 +1872,7 @@
 
         /**
          * Switches between game modes.
-         * @param {string} mode - The mode to switch to ('home', 'expeditions', 'arena', 'dungeon', 'story').
+         * @param {string} mode - The mode to switch to ('home', 'expeditions', 'arena', 'dungeon', 'story', 'forge', 'dailyQuests').
          */
         function switchMode(mode) {
             currentMode = mode;
@@ -1630,10 +1887,15 @@
             // Activate the selected section and its tab button
             document.getElementById(`${mode}Mode`).classList.add('active');
             document.querySelector(`.tab-button[data-mode="${mode}"]`).classList.add('active');
+
+            // Specific UI updates for new modes when switching
+            if (mode === 'forge') {
+                updateForgeUI();
+            } else if (mode === 'dailyQuests') {
+                updateDailyQuestsUI();
+            }
         }
 
-        // --- Removed EXPEDITIONS MODE LOGIC ---
-        // Functions removed: startExpedition, collectExpeditionRewards, cancelExpedition, generateExpeditionNarrative, updateExpeditionsUI, startExpeditionTimer, formatTime
 
         // --- ARENA MODE LOGIC ---
 
@@ -1641,7 +1903,7 @@
          * Generates a dummy opponent for arena battle.
          */
         function findOpponent() {
-            const opponentNames = ["Ombre", "Fléau", "Titan", "Spectre", "Gardien"];
+            const opponentNames = ["Ombre", "Fléau", "Titan", "Spectre", "Gardien", "Faucheur", "Berserker"];
             const randomName = opponentNames[Math.floor(Math.random() * opponentNames.length)];
             const playerPower = calculateTeamPower();
 
@@ -1684,6 +1946,7 @@
                 playerArenaStats.wins++;
                 playerArenaStats.points += 50; // Points for winning
                 result = "Victoire !";
+                updateDailyQuestProgress('arenaWin', 1); // Update daily quest for arena win
             } else {
                 playerArenaStats.losses++;
                 playerArenaStats.points = Math.max(0, playerArenaStats.points - 20); // Lose some points on defeat
@@ -1747,10 +2010,10 @@
                 showMessageBox("Équipe vide", "Veuillez ajouter des héros à votre équipe principale pour entrer dans le donjon.");
                 return;
             }
-            // Check if any hero is busy in story (no specific busy state for story for now)
+            // Check if any hero is busy
             for (const heroId of teamHeroIds) {
-                if (isHeroInExpeditionOrDungeon(heroId)) { // isHeroInExpeditionOrDungeon now only checks dungeon
-                    showMessageBox("Héros occupé", "Un ou plusieurs héros de votre équipe sont en expédition ou dans une quête d'histoire et ne peuvent pas entrer dans le donjon.");
+                if (isHeroBusy(heroId)) {
+                    showMessageBox("Héros occupé", "Un ou plusieurs héros de votre équipe sont déjà occupés et ne peuvent pas entrer dans le donjon.");
                     return;
                 }
             }
@@ -1774,6 +2037,7 @@
 
             await savePlayerData();
             updateDungeonUI();
+            updateUI(); // Update hero inventory display
             showMessageBox("Donjon entré !", `Vous êtes entré dans le Donjon à l'étage 1. Bonne chance !`);
             dungeonEnemyDescription.textContent = ''; // Clear description on new dungeon entry
         }
@@ -1791,7 +2055,7 @@
             let totalHeroHp = playerDungeonState.dungeonTeamHeroIds.reduce((sum, heroId) => sum + playerDungeonState.heroHpMap[heroId], 0);
 
             // Simple enemy power based on floor
-            const enemyPower = playerDungeonState.currentFloor * 50 + 100;
+            const enemyPower = playerDungeonState.currentFloor * 100 + 500; // Scaled enemy power
 
             let damageTaken = Math.max(0, enemyPower - teamPower / 2); // Less damage if team has high ATK
             if (damageTaken > totalHeroHp) damageTaken = totalHeroHp; // Prevent overheal/too much damage
@@ -1833,6 +2097,9 @@
             await savePlayerData();
             updateDungeonUI();
             dungeonEnemyDescription.textContent = ''; // Clear description after fighting floor
+
+            // Update daily quest for dungeon floors
+            updateDailyQuestProgress('dungeonFloors', 1);
 
             if (playerDungeonState.currentFloor > DUNGEON_MAX_FLOOR) {
                 showMessageBox("Donjon terminé !", `Vous avez vaincu le Donjon ! Vous avez gagné ${playerDungeonState.accumulatedGold} Or.`);
@@ -1907,7 +2174,7 @@
             dungeonEnemyDescriptionLoading.classList.remove('hidden'); // Show loading spinner
 
             const currentFloor = playerDungeonState.currentFloor;
-            const enemyPower = currentFloor * 50 + 100;
+            const enemyPower = currentFloor * 100 + 500; // Scaled enemy power
 
             const prompt = `Générez une description courte et atmosphérique (environ 30-50 mots) pour l'ennemi que l'on pourrait rencontrer à l'étage ${currentFloor} d'un donjon RPG. La puissance de l'ennemi est d'environ ${enemyPower}. Rendez la description mystérieuse ou menaçante, adaptée à un jeu fantastique.`;
             
@@ -1979,7 +2246,7 @@
                     healDungeonButton.disabled = true;
                     generateEnemyDescriptionButton.disabled = true;
                 } else if (playerDungeonState.currentFloor <= DUNGEON_MAX_FLOOR) {
-                     dungeonEnemyPowerDisplay.textContent = `Ennemis à l'étage ${playerDungeonState.currentFloor}: Puissance estimée ${playerDungeonState.currentFloor * 50 + 100}`;
+                     dungeonEnemyPowerDisplay.textContent = `Ennemis à l'étage ${playerDungeonState.currentFloor}: Puissance estimée ${playerDungeonState.currentFloor * 100 + 500}`; // Scaled enemy power
                      fightDungeonButton.disabled = false;
                      healDungeonButton.disabled = false;
                      generateEnemyDescriptionButton.disabled = false;
@@ -2101,7 +2368,7 @@
             }
             // Check if any hero is busy in dungeon
             for (const heroId of teamHeroIds) {
-                if (isHeroInExpeditionOrDungeon(heroId)) {
+                if (isHeroBusy(heroId)) {
                     showMessageBox("Héros occupé", "Un ou plusieurs héros de votre équipe sont déjà occupés et ne peuvent pas démarrer la quête.");
                     return;
                 }
@@ -2148,6 +2415,7 @@
                     }
                     showMessageBox("Chapitre terminé !", `Vous avez terminé toutes les quêtes du Chapitre ${playerStoryState.currentChapter - 1}. Le Chapitre ${playerStoryState.currentChapter} est maintenant débloqué !`);
                 }
+                updateDailyQuestProgress('storyQuest', 1); // Update daily quest for starting story quest
             } else {
                 questSuccess = false;
                 showMessageBox("Quête échouée", "Votre équipe n'était pas assez forte pour cette quête. Renforcez-vous et réessayez !");
@@ -2210,6 +2478,340 @@
             }
         }
 
+        // --- FORGE MODE LOGIC ---
+
+        /**
+         * Updates the UI for Forge mode.
+         */
+        function updateForgeUI() {
+            // Populate the dropdown with heroes not currently in team or dungeon
+            forgeHeroSelect.innerHTML = '<option value="">-- Sélectionnez un héros --</option>';
+            const forgeableHeroes = playerHeroes.filter(hero => !teamHeroIds.includes(hero.id) && !isHeroBusy(hero.id));
+
+            forgeableHeroes.forEach(hero => {
+                const option = document.createElement('option');
+                option.value = hero.id;
+                option.textContent = `${hero.name} (${hero.rarity}) - Niv.Amél: ${hero.upgradeLevel || 0}`;
+                forgeHeroSelect.appendChild(option);
+            });
+
+            // If a hero is selected, update details
+            if (selectedHeroForForge) {
+                const hero = playerHeroes.find(h => h.id === selectedHeroForForge.id);
+                if (hero) {
+                    selectedForgeHeroDisplay.classList.remove('hidden');
+                    selectedForgeHeroDisplay.classList.add('flex');
+                    forgeHeroImage.src = hero.imageUrl;
+                    forgeHeroImage.onerror = () => { forgeHeroImage.src = 'https://placehold.co/80x80/A0AEC0/FFFFFF?text=?'; };
+                    forgeHeroName.textContent = hero.name;
+                    forgeHeroRarity.textContent = hero.rarity;
+                    forgeHeroRarity.className = `text-md text-blue-700 rarity-${hero.rarity.toLowerCase()}`;
+                    forgeHeroCurrentStats.textContent = `ATK: ${hero.stats.atk} DEF: ${hero.stats.def} HP: ${hero.stats.hp}`;
+                    forgeHeroUpgradeLevel.textContent = hero.upgradeLevel || 0;
+
+                    const nextLevelStats = calculateNextForgeStats(hero);
+                    forgeHeroNextStats.textContent = `Prochain Niveau: ATK: ${nextLevelStats.atk} DEF: ${nextLevelStats.def} HP: ${nextLevelStats.hp}`;
+                    forgeCost.textContent = calculateForgeCost(hero);
+
+                    upgradeHeroButton.disabled = playerGold < calculateForgeCost(hero);
+                    if (hero.upgradeLevel >= getMaxForgeLevel(hero.rarity)) {
+                        upgradeHeroButton.disabled = true;
+                        forgeHeroNextStats.textContent = "Niveau d'amélioration maximum atteint !";
+                    }
+                    upgradeHeroButton.classList.toggle('opacity-50', upgradeHeroButton.disabled);
+                    upgradeHeroButton.classList.toggle('cursor-not-allowed', upgradeHeroButton.disabled);
+                } else {
+                    // Selected hero no longer exists or is busy, reset display
+                    selectedForgeHeroDisplay.classList.add('hidden');
+                    forgeHeroSelect.value = "";
+                    upgradeHeroButton.disabled = true;
+                    selectedHeroForForge = null;
+                    forgeCost.textContent = 0;
+                }
+            } else {
+                selectedForgeHeroDisplay.classList.add('hidden');
+                upgradeHeroButton.disabled = true;
+                forgeCost.textContent = 0;
+            }
+        }
+
+        /**
+         * Calculates the cost to upgrade a hero.
+         * @param {object} hero - The hero to calculate cost for.
+         * @returns {number} The gold cost.
+         */
+        function calculateForgeCost(hero) {
+            const baseCosts = {
+                "Common": 1000,
+                "Rare": 3000,
+                "Epic": 8000,
+                "Legendary": 20000,
+                "Ancient": 50000,
+                "Divine": 100000
+            };
+            const currentLevel = hero.upgradeLevel || 0;
+            const baseCost = baseCosts[hero.rarity] || 1000;
+            return Math.floor(baseCost * (1 + currentLevel * 0.3)); // Cost increases by 30% per level
+        }
+
+        /**
+         * Calculates the stats of a hero after the next upgrade.
+         * @param {object} hero - The hero to calculate stats for.
+         * @returns {object} Object with projected ATK, DEF, HP.
+         */
+        function calculateNextForgeStats(hero) {
+            const currentStats = { ...hero.stats }; // Clone to avoid modifying original
+            const nextAtk = currentStats.atk + 2;
+            const nextDef = currentStats.def + 1;
+            const nextHp = currentStats.hp + 10;
+            return { atk: nextAtk, def: nextDef, hp: nextHp };
+        }
+
+        /**
+         * Gets the maximum forge level for a given rarity.
+         * @param {string} rarity - The rarity of the hero.
+         * @returns {number} The maximum forge level.
+         */
+        function getMaxForgeLevel(rarity) {
+            const maxLevels = {
+                "Common": 10,
+                "Rare": 15,
+                "Epic": 20,
+                "Legendary": 25,
+                "Ancient": 30,
+                "Divine": 35
+            };
+            return maxLevels[rarity] || 10; // Default max level
+        }
+
+        /**
+         * Performs the hero upgrade action.
+         */
+        async function upgradeSelectedHero() {
+            if (!selectedHeroForForge) {
+                showMessageBox("Erreur", "Veuillez sélectionner un héros à améliorer.");
+                return;
+            }
+
+            const heroIndex = playerHeroes.findIndex(h => h.id === selectedHeroForForge.id);
+            if (heroIndex === -1) {
+                showMessageBox("Erreur", "Le héros sélectionné n'a pas été trouvé dans votre inventaire.");
+                return;
+            }
+
+            const hero = playerHeroes[heroIndex];
+            const cost = calculateForgeCost(hero);
+            const maxLevel = getMaxForgeLevel(hero.rarity);
+
+            if (hero.upgradeLevel >= maxLevel) {
+                showMessageBox("Niveau Max", `${hero.name} a déjà atteint son niveau d'amélioration maximum (${maxLevel}).`);
+                return;
+            }
+
+            if (playerGold < cost) {
+                showMessageBox("Pas assez d'Or !", `Vous avez besoin de ${cost} Or pour améliorer ${hero.name}.`);
+                return;
+            }
+
+            playerGold -= cost;
+            hero.stats.atk += 2;
+            hero.stats.def += 1;
+            hero.stats.hp += 10;
+            hero.upgradeLevel = (hero.upgradeLevel || 0) + 1;
+
+            playerHeroes[heroIndex] = hero; // Update the hero in the array
+
+            await savePlayerData();
+            updateUI(); // Refresh inventory and gold
+            updateForgeUI(); // Refresh forge details for selected hero
+            showMessageBox("Héros amélioré !", `${hero.name} a été amélioré au niveau ${hero.upgradeLevel} !`);
+        }
+
+
+        // --- DAILY QUESTS MODE LOGIC ---
+
+        /**
+         * Initializes daily quests for a new player or if data is missing.
+         */
+        function initializeDailyQuests() {
+            playerDailyQuests = {
+                lastReset: Date.now(),
+                quests: {}
+            };
+            for (const key in DAILY_QUESTS_DEFINITIONS) {
+                playerDailyQuests.quests[key] = { progress: 0, completed: false, claimed: false };
+            }
+        }
+
+        /**
+         * Checks if daily quests need to be reset and performs reset if necessary.
+         */
+        async function checkAndResetDailyQuests() {
+            const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+            const now = Date.now();
+
+            if (now - playerDailyQuests.lastReset >= oneDay) {
+                console.log("Réinitialisation des quêtes quotidiennes...");
+                playerDailyQuests.lastReset = now;
+                for (const key in DAILY_QUESTS_DEFINITIONS) {
+                    playerDailyQuests.quests[key] = { progress: 0, completed: false, claimed: false };
+                }
+                await savePlayerData();
+                updateDailyQuestsUI();
+                showMessageBox("Quêtes Quotidiennes réinitialisées !", "De nouvelles quêtes quotidiennes vous attendent !");
+            }
+        }
+
+        /**
+         * Updates progress for a specific daily quest.
+         * @param {string} questType - The type of quest (e.g., 'summonHero').
+         * @param {number} amount - The amount to increment progress by.
+         */
+        async function updateDailyQuestProgress(questType, amount) {
+            if (!playerDailyQuests.quests[questType]) {
+                console.warn(`Type de quête quotidienne inconnu: ${questType}`);
+                return;
+            }
+            const quest = playerDailyQuests.quests[questType];
+            const definition = DAILY_QUESTS_DEFINITIONS[questType];
+
+            if (!quest.completed && !quest.claimed) {
+                quest.progress += amount;
+                if (quest.progress >= definition.target) {
+                    quest.progress = definition.target; // Cap progress at target
+                    quest.completed = true;
+                    // Don't show message box here, let UI update handle it later for better flow
+                }
+                await savePlayerData();
+                updateDailyQuestsUI(); // Update UI immediately
+            }
+        }
+
+        /**
+         * Claims rewards for a completed daily quest.
+         * @param {string} questType - The type of quest to claim rewards for.
+         */
+        async function claimDailyQuestReward(questType) {
+            if (!playerDailyQuests.quests[questType]) {
+                showMessageBox("Erreur", "Cette quête n'existe pas.");
+                return;
+            }
+            const quest = playerDailyQuests.quests[questType];
+            const definition = DAILY_QUESTS_DEFINITIONS[questType];
+
+            if (!quest.completed) {
+                showMessageBox("Non terminée", "Cette quête n'est pas encore terminée.");
+                return;
+            }
+            if (quest.claimed) {
+                showMessageBox("Déjà réclamé", "La récompense pour cette quête a déjà été réclamée.");
+                return;
+            }
+
+            playerGold += definition.rewardGold;
+            quest.claimed = true; // Mark as claimed
+
+            await savePlayerData();
+            updateUI(); // Update gold display
+            updateDailyQuestsUI();
+            showMessageBox("Récompense collectée !", `Vous avez collecté ${definition.rewardGold} Or de la quête "${definition.description}" !`);
+        }
+
+        /**
+         * Updates the UI for Daily Quests mode.
+         */
+        function updateDailyQuestsUI() {
+            dailyQuestsListDiv.innerHTML = ''; // Clear existing quests
+
+            for (const key in DAILY_QUESTS_DEFINITIONS) {
+                const definition = DAILY_QUESTS_DEFINITIONS[key];
+                const questState = playerDailyQuests.quests[key];
+
+                const questItem = document.createElement('div');
+                questItem.classList.add('flex', 'flex-col', 'sm:flex-row', 'justify-between', 'items-center', 'p-3', 'bg-gray-100', 'rounded-lg');
+                
+                let statusText = '';
+                let buttonHtml = '';
+                let textColor = 'text-gray-700';
+
+                if (questState.claimed) {
+                    statusText = 'Réclamée';
+                    textColor = 'text-green-600';
+                } else if (questState.completed) {
+                    statusText = 'Terminée !';
+                    textColor = 'text-blue-600';
+                    buttonHtml = `<button class="button-primary text-sm p-2" data-quest-type="${key}">Réclamer (${definition.rewardGold} Or)</button>`;
+                } else {
+                    statusText = `Progression: ${questState.progress}/${definition.target}`;
+                    textColor = 'text-gray-500';
+                }
+
+                questItem.innerHTML = `
+                    <p class="font-semibold ${textColor} mb-2 sm:mb-0">${definition.description}</p>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm ${textColor}">${statusText}</span>
+                        ${buttonHtml}
+                    </div>
+                `;
+                dailyQuestsListDiv.appendChild(questItem);
+
+                // Add event listener for claim button if it exists
+                if (questState.completed && !questState.claimed) {
+                    questItem.querySelector('button').addEventListener('click', (event) => {
+                        claimDailyQuestReward(event.target.dataset.questType);
+                    });
+                }
+            }
+            updateDailyQuestResetTimer();
+        }
+
+        /**
+         * Updates the daily quest reset timer.
+         */
+        function updateDailyQuestResetTimer() {
+            const oneDay = 24 * 60 * 60 * 1000;
+            const nextResetTime = playerDailyQuests.lastReset + oneDay;
+            const remainingTime = nextResetTime - Date.now();
+
+            if (remainingTime > 0) {
+                dailyQuestResetTimerSpan.textContent = formatTime(remainingTime);
+            } else {
+                dailyQuestResetTimerSpan.textContent = "Bientôt réinitialisé...";
+                checkAndResetDailyQuests(); // Force check if timer runs out
+            }
+        }
+
+        /**
+         * Starts the interval to update daily quest timers.
+         */
+        function startDailyQuestTimer() {
+            if (dailyQuestTimerInterval) {
+                clearInterval(dailyQuestTimerInterval);
+            }
+            dailyQuestTimerInterval = setInterval(updateDailyQuestResetTimer, 1000); // Update every second
+        }
+
+        /**
+         * Formats milliseconds into a readable time string (e.g., 01h 30m 15s).
+         * @param {number} ms - Milliseconds.
+         * @returns {string} Formatted time string.
+         */
+        function formatTime(ms) {
+            if (ms < 0) ms = 0;
+            const seconds = Math.floor((ms / 1000) % 60);
+            const minutes = Math.floor((ms / (1000 * 60)) % 60);
+            const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
+            const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+
+            let parts = [];
+            if (days > 0) parts.push(`${days}j`);
+            if (hours > 0) parts.push(`${hours}h`);
+            if (minutes > 0) parts.push(`${minutes}m`);
+            if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`); // Ensure at least seconds are shown
+
+            return parts.join(' ');
+        }
+
 
         /**
          * Sets up event listeners for buttons.
@@ -2249,8 +2851,6 @@
                 });
             });
 
-            // Removed Expeditions Mode listeners
-
             // Arena Mode listeners
             findOpponentButton.addEventListener('click', findOpponent);
             startArenaBattleButton.addEventListener('click', startArenaBattle);
@@ -2271,6 +2871,16 @@
 
             // Story Quests Mode listeners
             startStoryQuestButton.addEventListener('click', startStoryQuest);
+
+            // Forge Mode listeners
+            forgeHeroSelect.addEventListener('change', (event) => {
+                const heroId = event.target.value;
+                selectedHeroForForge = playerHeroes.find(h => h.id === heroId) || null;
+                updateForgeUI(); // Update UI based on selected hero
+            });
+            upgradeHeroButton.addEventListener('click', upgradeSelectedHero);
+
+            // Daily Quests listeners are added dynamically in updateDailyQuestsUI
         }
 
         // Initialize the game when the window loads
