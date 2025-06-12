@@ -377,7 +377,7 @@
         <div id="gameContent" class="hidden w-full flex flex-col items-center">
             <div id="gameModeTabs" class="flex justify-center mb-6">
                 <button class="tab-button active" data-mode="home">Accueil & Invocation</button>
-                <button class="tab-button" data-mode="expeditions">Expéditions</button>
+                <!-- Removed Expeditions Tab -->
                 <button class="tab-button" data-mode="arena">Arène</button>
                 <button class="tab-button" data-mode="dungeon">Donjon</button>
                 <button class="tab-button" data-mode="story">Quêtes d'Histoire</button>
@@ -433,42 +433,7 @@
                         </div>
                     </div>
 
-                    <!-- EXPEDITIONS Mode Section -->
-                    <div id="expeditionsMode" class="game-mode-section">
-                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Expéditions</h2>
-                        <div class="card p-5 mb-6">
-                            <h3 class="text-xl font-bold text-gray-800 mb-4">Expédition en cours:</h3>
-                            <div id="activeExpeditionDisplay" class="text-gray-700">Aucune expédition en cours.</div>
-                            <div class="flex gap-4 mt-4 w-full justify-center">
-                                <button id="collectExpeditionGoldButton" class="button-primary flex-grow">
-                                    Collecter (<span id="expeditionGoldToCollect">0</span> Or)
-                                </button>
-                                <button id="cancelExpeditionButton" class="button-cancel-expedition flex-grow hidden">
-                                    Annuler l'expédition
-                                </button>
-                            </div>
-                            <div id="expeditionNarrativeDisplay" class="mt-4 text-sm text-gray-800 text-left w-full hidden"></div>
-                            <div id="expeditionNarrativeLoading" class="loader hidden"></div>
-                            <button id="generateExpeditionNarrativeButton" class="button-gemini-feature mt-2 hidden">Générer récit d'expédition ✨</button>
-                        </div>
-
-                        <div class="card p-5">
-                            <h3 class="text-xl font-bold text-gray-800 mb-4">Lancer une nouvelle expédition:</h3>
-                            <div class="flex flex-col gap-4 w-full">
-                                <select id="expeditionTypeSelect" class="p-3 border border-gray-300 rounded-lg w-full">
-                                    <option value="easy">Forêt Facile (30 min, 100 000 Or)</option>
-                                    <option value="medium">Montagne Moyenne (2h, 500 000 Or)</option>
-                                    <option value="hard">Donjon Difficile (8h, 2 000 000 Or)</option>
-                                </select>
-                                <button id="startExpeditionButton" class="button-primary w-full">
-                                    Envoyer une équipe
-                                </button>
-                            </div>
-                            <div class="mt-4 text-sm text-gray-600">
-                                Pour les expéditions, sélectionnez une équipe depuis votre inventaire.
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Removed EXPEDITIONS Mode Section -->
 
                     <!-- ARENA Mode Section -->
                     <div id="arenaMode" class="game-mode-section">
@@ -654,7 +619,7 @@
         let goldToCollect = 0; // Gold accumulated by team, ready to be collected
 
         // New game mode specific states
-        let playerExpeditions = []; // { heroIds: [], type: 'easy', startTime: timestamp, endTime: timestamp, collected: false }
+        // Removed playerExpeditions
         let playerArenaStats = { wins: 0, losses: 0, points: 0 };
         let playerDungeonState = {
             active: false,
@@ -680,7 +645,7 @@
         const DUNGEON_FLOOR_GOLD_REWARD = 200; // Gold per floor cleared
 
         let goldGenerationInterval; // To store the interval ID
-        let expeditionTimerInterval; // To update expedition timers
+        // Removed expeditionTimerInterval
 
         // Hero data with rarity, placeholder images, and stats
         const HEROES_DATA = [
@@ -805,12 +770,7 @@
             }
         };
 
-        // Expedition types and rewards
-        const EXPEDITION_TYPES = {
-            "easy": { name: "Forêt Facile", durationMs: 30 * 60 * 1000, goldReward: 1000 * 100, minHeroes: 1 }, // Multiplié par 100
-            "medium": { name: "Montagne Moyenne", durationMs: 2 * 60 * 60 * 1000, goldReward: 5000 * 100, minHeroes: 2 }, // Multiplié par 100
-            "hard": { name: "Donjon Difficile", durationMs: 8 * 60 * 60 * 1000, goldReward: 20000 * 100, minHeroes: 3 } // Multiplié par 100
-        };
+        // Removed Expedition types and rewards
 
         // Story Quests Data
         const STORY_QUESTS_DATA = [
@@ -951,21 +911,12 @@
         // UI Elements for Game Mode Navigation
         const gameModeTabs = document.querySelectorAll('.tab-button');
         const homeModeSection = document.getElementById('homeMode');
-        const expeditionsModeSection = document.getElementById('expeditionsMode');
+        // Removed expeditionsModeSection
         const arenaModeSection = document.getElementById('arenaMode');
         const dungeonModeSection = document.getElementById('dungeonMode');
         const storyModeSection = document.getElementById('storyMode'); // Keep Story Mode
 
-        // UI Elements for Expeditions
-        const activeExpeditionDisplay = document.getElementById('activeExpeditionDisplay');
-        const collectExpeditionGoldButton = document.getElementById('collectExpeditionGoldButton');
-        const expeditionGoldToCollectSpan = document.getElementById('expeditionGoldToCollect');
-        const expeditionTypeSelect = document.getElementById('expeditionTypeSelect');
-        const startExpeditionButton = document.getElementById('startExpeditionButton');
-        const cancelExpeditionButton = document.getElementById('cancelExpeditionButton');
-        const expeditionNarrativeDisplay = document.getElementById('expeditionNarrativeDisplay');
-        const expeditionNarrativeLoading = document.getElementById('expeditionNarrativeLoading');
-        const generateExpeditionNarrativeButton = document.getElementById('generateExpeditionNarrativeButton');
+        // Removed UI Elements for Expeditions
 
         // UI Elements for Arena
         const arenaWinsSpan = document.getElementById('arenaWins');
@@ -1028,8 +979,8 @@
                         gameContent.classList.remove('hidden');
                         startListeningForPlayerData();
                         startGoldGeneration(); // Start gold generation once user is authenticated
-                        startExpeditionTimer(); // Start expedition timer updates
-                        updateExpeditionsUI(); // Initial update for expeditions
+                        // Removed startExpeditionTimer();
+                        // Removed updateExpeditionsUI();
                         updateDungeonUI(); // Initial update for dungeon
                         updateArenaUI(); // Initial update for arena
                         updateStoryUI(); // Initial update for story
@@ -1047,7 +998,7 @@
                         playerHeroes = [];
                         teamHeroIds = [];
                         goldToCollect = 0;
-                        playerExpeditions = [];
+                        // Removed playerExpeditions = [];
                         playerArenaStats = { wins: 0, losses: 0, points: 0 };
                         playerDungeonState = { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
                         playerStoryState = { currentChapter: 1, completedQuestIds: [] }; // Reset story state
@@ -1060,10 +1011,7 @@
                             clearInterval(goldGenerationInterval);
                             goldGenerationInterval = null;
                         }
-                        if (expeditionTimerInterval) {
-                            clearInterval(expeditionTimerInterval);
-                            expeditionTimerInterval = null;
-                        }
+                        // Removed if (expeditionTimerInterval) { ... }
                         updateUI(); // Update UI to reflect logged-out state
                     }
                 });
@@ -1107,12 +1055,12 @@
                     goldToCollect = data.goldToCollect || 0;
 
                     // Load new game mode data
-                    playerExpeditions = data.expeditions ? JSON.parse(data.expeditions) : [];
+                    // Removed playerExpeditions = data.expeditions ? JSON.parse(data.expeditions) : [];
                     playerArenaStats = data.arenaStats || { wins: 0, losses: 0, points: 0 };
                     playerDungeonState = data.dungeonState || { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
                     playerStoryState = data.storyState || { currentChapter: 1, completedQuestIds: [] }; // Load story state
 
-                    console.log("Données du joueur chargées ou mises à jour:", { gold: playerGold, heroesCount: playerHeroes.length, teamCount: teamHeroIds.length, goldToCollect: goldToCollect, expeditions: playerExpeditions.length, arena: playerArenaStats, dungeon: playerDungeonState, story: playerStoryState });
+                    console.log("Données du joueur chargées ou mises à jour:", { gold: playerGold, heroesCount: playerHeroes.length, teamCount: teamHeroIds.length, goldToCollect: goldToCollect, arena: playerArenaStats, dungeon: playerDungeonState, story: playerStoryState });
                 } else {
                     // Document does not exist, initialize player data only if no data was found
                     console.log("Aucune donnée de joueur trouvée. Initialisation des données.");
@@ -1120,7 +1068,7 @@
                     playerHeroes = [];
                     teamHeroIds = [];
                     goldToCollect = 0;
-                    playerExpeditions = [];
+                    // Removed playerExpeditions = [];
                     playerArenaStats = { wins: 0, losses: 0, points: 0 };
                     playerDungeonState = { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
                     playerStoryState = { currentChapter: 1, completedQuestIds: [] }; // Initialize story state
@@ -1128,7 +1076,7 @@
                     savePlayerData(true); // Force save on first load
                 }
                 updateUI(); // Always update UI after data changes
-                updateExpeditionsUI(); // Update UI for expeditions
+                // Removed updateExpeditionsUI();
                 updateArenaUI(); // Update UI for arena
                 updateDungeonUI(); // Update UI for dungeon
                 updateStoryUI(); // Update UI for story
@@ -1152,7 +1100,7 @@
             // Stringify heroes array for Firestore storage, and new game mode data
             const heroesToSave = JSON.stringify(playerHeroes);
             const teamIdsToSave = teamHeroIds; // Already an array of strings
-            const expeditionsToSave = JSON.stringify(playerExpeditions);
+            // Removed expeditionsToSave
             const arenaStatsToSave = playerArenaStats;
             const dungeonStateToSave = playerDungeonState;
             const storyStateToSave = playerStoryState; // Save story state
@@ -1168,7 +1116,7 @@
                     heroes: heroesToSave, // Store as string
                     teamHeroIds: teamIdsToSave,
                     goldToCollect: goldToCollect,
-                    expeditions: expeditionsToSave, // Store as string
+                    // Removed expeditions: expeditionsToSave,
                     arenaStats: arenaStatsToSave,
                     dungeonState: dungeonStateToSave,
                     storyState: storyStateToSave // Save story state
@@ -1267,9 +1215,8 @@
          * @returns {boolean} True if the hero is busy in an expedition, dungeon or story quest, false otherwise.
          */
         function isHeroInExpeditionOrDungeon(heroId) {
-            if (playerExpeditions.some(exp => exp.heroIds.includes(heroId))) return true;
+            // Only check for dungeon now that expeditions are removed
             if (playerDungeonState.active && playerDungeonState.dungeonTeamHeroIds.includes(heroId)) return true;
-            // No specific hero busy state for story quests as they are instant battles
             return false;
         }
 
@@ -1389,7 +1336,7 @@
             heroesInTeam.forEach(hero => {
                 const heroCard = document.createElement('div');
                 heroCard.classList.add('card', 'p-3', 'no-hover');
-                // Only disable if busy in expedition or dungeon
+                // Only disable if busy in dungeon
                 const isBusyInOtherModes = isHeroInExpeditionOrDungeon(hero.id);
                 heroCard.innerHTML = `
                         <img class="w-16 h-16 rounded-full object-cover mb-2 border-2 border-indigo-500" src="${hero.imageUrl}" onerror="this.onerror=null; this.src='https://placehold.co/80x80/A0AEC0/FFFFFF?text=?';" alt="${hero.name}">
@@ -1421,7 +1368,7 @@
         async function toggleHeroInTeam(hero) {
             // Prevent adding/removing heroes that are busy elsewhere
             if (isHeroInExpeditionOrDungeon(hero.id) && !teamHeroIds.includes(hero.id)) {
-                showMessageBox("Héros occupé", `${hero.name} est actuellement occupé dans une autre activité (expedition ou donjon) et ne peut pas être ajouté à l'équipe.`);
+                showMessageBox("Héros occupé", `${hero.name} est actuellement occupé dans une autre activité (donjon) et ne peut pas être ajouté à l'équipe.`);
                 return;
             }
 
@@ -1588,7 +1535,7 @@
             let chatHistory = [];
             chatHistory.push({ role: "user", parts: [{ text: prompt }] });
             const payload = { contents: chatHistory };
-            const apiKey = ""; // API key is left empty as per instructions; Canvas provides it at runtime.
+            const apiKey = "AIzaSyDsyjdlwH2HYVVfgRNAeIYjyQqeym5sqFs"; // Your API key is inserted here
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
             try {
@@ -1685,240 +1632,8 @@
             document.querySelector(`.tab-button[data-mode="${mode}"]`).classList.add('active');
         }
 
-        // --- EXPEDITIONS MODE LOGIC ---
-
-        /**
-         * Starts an expedition.
-         */
-        async function startExpedition() {
-            if (playerExpeditions.length > 0) {
-                showMessageBox("Expédition en cours", "Vous avez déjà une expédition en cours. Attendez qu'elle se termine.");
-                return;
-            }
-            if (teamHeroIds.length === 0) {
-                showMessageBox("Équipe vide", "Veuillez ajouter des héros à votre équipe principale pour les envoyer en expédition.");
-                return;
-            }
-
-            const selectedType = expeditionTypeSelect.value;
-            const expeditionInfo = EXPEDITION_TYPES[selectedType];
-
-            if (teamHeroIds.length < expeditionInfo.minHeroes) {
-                showMessageBox("Équipe insuffisante", `Cette expédition nécessite au moins ${expeditionInfo.minHeroes} héros dans votre équipe.`);
-                return;
-            }
-
-            // Check if any hero in the team is already busy elsewhere (e.g., another expedition or dungeon)
-            for (const heroId of teamHeroIds) {
-                if (isHeroInExpeditionOrDungeon(heroId)) {
-                    showMessageBox("Héros occupé", "Un ou plusieurs héros de votre équipe sont déjà en expédition ou dans le donjon.");
-                    return;
-                }
-            }
-
-            const startTime = Date.now();
-            const endTime = startTime + expeditionInfo.durationMs;
-
-            playerExpeditions.push({
-                heroIds: [...teamHeroIds], // Clone the array
-                type: selectedType,
-                startTime: startTime,
-                endTime: endTime,
-                collected: false
-            });
-
-            // Make heroes temporarily "unavailable" by being in an expedition (handled by isHeroBusy)
-            await savePlayerData();
-            showMessageBox("Expédition lancée !", `${expeditionInfo.name} a commencé avec votre équipe. Revenez dans ${formatTime(expeditionInfo.durationMs)}.`);
-            updateExpeditionsUI();
-            updateUI(); // To refresh inventory status
-        }
-
-        /**
-         * Collects rewards from a completed expedition.
-         */
-        async function collectExpeditionRewards() {
-            const completedExpeditions = playerExpeditions.filter(exp => Date.now() >= exp.endTime && !exp.collected);
-
-            if (completedExpeditions.length === 0) {
-                showMessageBox("Aucune récompense", "Aucune expédition terminée ou récompenses déjà collectées.");
-                return;
-            }
-
-            let totalGoldCollected = 0;
-            playerExpeditions = playerExpeditions.map(exp => {
-                if (Date.now() >= exp.endTime && !exp.collected) {
-                    const expeditionInfo = EXPEDITION_TYPES[exp.type];
-                    totalGoldCollected += expeditionInfo.goldReward;
-                    exp.collected = true; // Mark as collected
-                    return exp;
-                }
-                return exp;
-            });
-
-            playerGold += totalGoldCollected;
-            // Remove collected expeditions from the list
-            playerExpeditions = playerExpeditions.filter(exp => !exp.collected);
-
-            await savePlayerData();
-            showMessageBox("Récompenses collectées !", `Vous avez collecté ${totalGoldCollected} Or des expéditions terminées.`);
-            updateExpeditionsUI();
-            updateUI(); // To refresh inventory status
-        }
-
-        /**
-         * Cancels the active expedition.
-         */
-        async function cancelExpedition() {
-            if (playerExpeditions.length === 0) {
-                showMessageBox("Aucune expédition", "Il n'y a pas d'expédition en cours à annuler.");
-                return;
-            }
-
-            // For simplicity, we just remove the first (and only) active expedition
-            const cancelledExpedition = playerExpeditions.shift(); // Removes the first element
-
-            await savePlayerData();
-            showMessageBox("Expédition annulée", `L'expédition "${EXPEDITION_TYPES[cancelledExpedition.type].name}" a été annulée. Aucun or n'a été collecté.`);
-            updateExpeditionsUI();
-            updateUI(); // To refresh inventory status
-            expeditionNarrativeDisplay.classList.add('hidden'); // Hide narrative if cancelled
-            expeditionNarrativeDisplay.textContent = '';
-        }
-
-        /**
-         * Generates a narrative for the completed expedition using Gemini API.
-         * @param {object} expedition - The expedition object for which to generate a narrative.
-         */
-        async function generateExpeditionNarrative(expedition) {
-            if (!expedition) {
-                showMessageBox("Erreur", "Aucune expédition terminée sélectionnée pour générer le récit.");
-                return;
-            }
-
-            expeditionNarrativeDisplay.classList.remove('hidden');
-            expeditionNarrativeDisplay.textContent = ''; // Clear previous narrative
-            expeditionNarrativeLoading.classList.remove('hidden'); // Show loading spinner
-
-            const expeditionInfo = EXPEDITION_TYPES[expedition.type];
-            const heroNames = expedition.heroIds.map(id => playerHeroes.find(h => h.id === id)?.name || 'un héros inconnu').join(', ');
-            
-            const prompt = `Écrivez un court récit (environ 50-70 mots) de l'expédition d'un groupe de héros. L'expédition était une "${expeditionInfo.name}" et a duré environ ${expeditionInfo.durationMs / 60000} minutes. Les héros participants étaient ${heroNames}. L'expédition a été couronnée de succès et a rapporté ${expeditionInfo.goldReward} Or. Mettez l'accent sur l'aventure et un sentiment d'accomplissement.`;
-            
-            let chatHistory = [];
-            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-            const payload = { contents: chatHistory };
-            const apiKey = ""; // API key is left empty as per instructions; Canvas provides it at runtime.
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    const narrative = result.candidates[0].content.parts[0].text;
-                    expeditionNarrativeDisplay.textContent = narrative;
-                } else {
-                    expeditionNarrativeDisplay.textContent = "Impossible de générer le récit. Veuillez réessayer.";
-                    console.error("Structure de réponse inattendue de l'API Gemini:", result);
-                }
-            } catch (error) {
-                console.error("Erreur lors de l'appel à l'API Gemini pour le récit d'expédition:", error);
-                expeditionNarrativeDisplay.textContent = "Erreur de connexion à l'IA. Veuillez vérifier votre connexion.";
-            } finally {
-                loadingElement.classList.add('hidden'); // Hide loading spinner
-            }
-        }
-
-
-        /**
-         * Updates the UI for expeditions mode.
-         */
-        function updateExpeditionsUI() {
-            if (playerExpeditions.length > 0) {
-                const activeExp = playerExpeditions[0]; // Assuming only one active at a time for simplicity
-                const remainingTimeMs = activeExp.endTime - Date.now();
-                const expeditionInfo = EXPEDITION_TYPES[activeExp.type];
-
-                if (remainingTimeMs > 0) {
-                    activeExpeditionDisplay.innerHTML = `
-                        <p class="font-bold">${expeditionInfo.name}</p>
-                        <p>Temps restant: <span id="expeditionTimer">${formatTime(remainingTimeMs)}</span></p>
-                        <p>Héros: ${activeExp.heroIds.map(id => playerHeroes.find(h => h.id === id)?.name || 'Inconnu').join(', ')}</p>
-                    `;
-                    collectExpeditionGoldButton.classList.add('hidden');
-                    cancelExpeditionButton.classList.remove('hidden'); // Show cancel button
-                    expeditionGoldToCollectSpan.textContent = 0;
-                    generateExpeditionNarrativeButton.classList.add('hidden'); // Hide narrative button
-                    expeditionNarrativeDisplay.classList.add('hidden'); // Hide narrative display
-                    expeditionNarrativeDisplay.textContent = ''; // Clear narrative content
-                } else {
-                    activeExpeditionDisplay.innerHTML = `
-                        <p class="font-bold">${expeditionInfo.name} terminée !</p>
-                        <p>Prêt à collecter ${expeditionInfo.goldReward} Or.</p>
-                        <p>Héros: ${activeExp.heroIds.map(id => playerHeroes.find(h => h.id === id)?.name || 'Inconnu').join(', ')}</p>
-                    `;
-                    collectExpeditionGoldButton.classList.remove('hidden');
-                    cancelExpeditionButton.classList.add('hidden'); // Hide cancel button if completed
-                    expeditionGoldToCollectSpan.textContent = expeditionInfo.goldReward;
-                    // Show narrative button only if the expedition is completed and rewards are ready
-                    generateExpeditionNarrativeButton.classList.remove('hidden');
-                }
-                startExpeditionButton.classList.add('opacity-50', 'cursor-not-allowed');
-                startExpeditionButton.disabled = true;
-                expeditionTypeSelect.disabled = true;
-
-            } else {
-                activeExpeditionDisplay.textContent = "Aucune expédition en cours.";
-                collectExpeditionGoldButton.classList.add('hidden');
-                cancelExpeditionButton.classList.add('hidden'); // Hide cancel button
-                expeditionGoldToCollectSpan.textContent = 0;
-                startExpeditionButton.classList.remove('opacity-50', 'cursor-not-allowed');
-                startExpeditionButton.disabled = false;
-                expeditionTypeSelect.disabled = false;
-                generateExpeditionNarrativeButton.classList.add('hidden'); // Hide narrative button
-                expeditionNarrativeDisplay.classList.add('hidden'); // Hide narrative display
-                expeditionNarrativeDisplay.textContent = ''; // Clear narrative content
-            }
-        }
-
-        /**
-         * Starts the interval to update expedition timers.
-         */
-        function startExpeditionTimer() {
-            if (expeditionTimerInterval) {
-                clearInterval(expeditionTimerInterval);
-            }
-            expeditionTimerInterval = setInterval(updateExpeditionsUI, 1000); // Update every second
-        }
-
-        /**
-         * Formats milliseconds into a readable time string (e.g., 01h 30m 15s).
-         * @param {number} ms - Milliseconds.
-         * @returns {string} Formatted time string.
-         */
-        function formatTime(ms) {
-            if (ms < 0) ms = 0;
-            const seconds = Math.floor((ms / 1000) % 60);
-            const minutes = Math.floor((ms / (1000 * 60)) % 60);
-            const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
-            const days = Math.floor(ms / (1000 * 60 * 60 * 24));
-
-            let parts = [];
-            if (days > 0) parts.push(`${days}j`);
-            if (hours > 0) parts.push(`${hours}h`);
-            if (minutes > 0) parts.push(`${minutes}m`);
-            if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`); // Ensure at least seconds are shown
-
-            return parts.join(' ');
-        }
-
+        // --- Removed EXPEDITIONS MODE LOGIC ---
+        // Functions removed: startExpedition, collectExpeditionRewards, cancelExpedition, generateExpeditionNarrative, updateExpeditionsUI, startExpeditionTimer, formatTime
 
         // --- ARENA MODE LOGIC ---
 
@@ -2032,9 +1747,9 @@
                 showMessageBox("Équipe vide", "Veuillez ajouter des héros à votre équipe principale pour entrer dans le donjon.");
                 return;
             }
-            // Check if any hero is busy in an expedition or story (no specific busy state for story for now)
+            // Check if any hero is busy in story (no specific busy state for story for now)
             for (const heroId of teamHeroIds) {
-                if (isHeroInExpeditionOrDungeon(heroId)) {
+                if (isHeroInExpeditionOrDungeon(heroId)) { // isHeroInExpeditionOrDungeon now only checks dungeon
                     showMessageBox("Héros occupé", "Un ou plusieurs héros de votre équipe sont en expédition ou dans une quête d'histoire et ne peuvent pas entrer dans le donjon.");
                     return;
                 }
@@ -2199,7 +1914,7 @@
             let chatHistory = [];
             chatHistory.push({ role: "user", parts: [{ text: prompt }] });
             const payload = { contents: chatHistory };
-            const apiKey = ""; // API key is left empty as per instructions; Canvas provides it at runtime.
+            const apiKey = "AIzaSyDsyjdlwH2HYVVfgRNAeIYjyQqeym5sqFs"; // Your API key is inserted here
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
             try {
@@ -2384,7 +2099,7 @@
                 showMessageBox("Équipe vide", "Veuillez ajouter des héros à votre équipe principale pour démarrer une quête d'histoire.");
                 return;
             }
-            // Check if any hero is busy in an expedition or dungeon
+            // Check if any hero is busy in dungeon
             for (const heroId of teamHeroIds) {
                 if (isHeroInExpeditionOrDungeon(heroId)) {
                     showMessageBox("Héros occupé", "Un ou plusieurs héros de votre équipe sont déjà occupés et ne peuvent pas démarrer la quête.");
@@ -2467,7 +2182,7 @@
             let chatHistory = [];
             chatHistory.push({ role: "user", parts: [{ text: prompt }] });
             const payload = { contents: chatHistory };
-            const apiKey = ""; // API key is left empty as per instructions; Canvas provides it at runtime.
+            const apiKey = "AIzaSyDsyjdlwH2HYVVfgRNAeIYjyQqeym5sqFs"; // Your API key is inserted here
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
             try {
@@ -2534,23 +2249,7 @@
                 });
             });
 
-            // Expeditions Mode listeners
-            startExpeditionButton.addEventListener('click', startExpedition);
-            collectExpeditionGoldButton.addEventListener('click', collectExpeditionRewards);
-            cancelExpeditionButton.addEventListener('click', cancelExpedition);
-            generateExpeditionNarrativeButton.addEventListener('click', () => {
-                if (playerExpeditions.length > 0) {
-                    const lastExpedition = playerExpeditions[0];
-                    if (Date.now() >= lastExpedition.endTime) {
-                         generateExpeditionNarrative(lastExpedition);
-                    } else {
-                        showMessageBox("Expédition non terminée", "Le récit d'expédition ne peut être généré qu'une fois l'expédition terminée.");
-                    }
-                } else {
-                    showMessageBox("Aucune expédition terminée", "Lancez et terminez une expédition pour générer un récit.");
-                }
-            });
-
+            // Removed Expeditions Mode listeners
 
             // Arena Mode listeners
             findOpponentButton.addEventListener('click', findOpponent);
