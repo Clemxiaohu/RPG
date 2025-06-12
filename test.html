@@ -1,0 +1,3143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu RPG Gacha</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Fond légèrement gris-bleu */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #game-container {
+            background-color: #ffffff; /* Fond blanc pur pour le conteneur */
+            border-radius: 1.5rem; /* Coins plus arrondis */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Ombre plus prononcée */
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            border: 1px solid #e2f2e7; /* Bordure subtile */
+        }
+        .section-title {
+            font-size: 1.75rem; /* Titre plus grand */
+            font-weight: 700;
+            color: #1a202c; /* Couleur de texte sombre */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: #f7fafc; /* Fond clair pour les cartes */
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            border: 1px solid #edf2f7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 10px;
+            transition: transform 0.2s ease-in-out;
+        }
+        /* No hover transform for cards that contain interactive buttons */
+        .card:not(.no-hover):hover {
+            transform: translateY(-5px); /* Léger effet de survol */
+        }
+        .button-primary {
+            background: linear-gradient(145deg, #4c51bf, #667eea); /* Dégradé de violet-bleu */
+            color: white;
+            padding: 12px 25px;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(80, 80, 190, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        .button-primary:hover {
+            background: linear-gradient(145deg, #667eea, #4c51bf); /* Inversion du dégradé au survol */
+            box-shadow: 0 8px 20px rgba(80, 80, 190, 0.4);
+            transform: translateY(-2px);
+        }
+        .button-primary:active {
+            transform: translateY(1px);
+            box-shadow: 0 3px 10px rgba(80, 80, 190, 0.2);
+        }
+        .button-secondary {
+            background-color: #cbd5e0; /* Light gray */
+            color: #4a5568; /* Darker gray text */
+            padding: 8px 15px;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .button-secondary:hover {
+            background-color: #a0aec0; /* Darker gray on hover */
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+        }
+        .button-secondary:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .button-gacha-basic {
+            background: linear-gradient(145deg, #4c51bf, #667eea);
+        }
+        .button-gacha-basic:hover {
+            background: linear-gradient(145deg, #667eea, #4c51bf);
+        }
+        .button-gacha-advanced {
+            background: linear-gradient(145deg, #d97706, #f59e0b); /* Orange */
+            box-shadow: 0 5px 15px rgba(217, 119, 6, 0.3);
+        }
+        .button-gacha-advanced:hover {
+            background: linear-gradient(145deg, #f59e0b, #d97706);
+            box-shadow: 0 8px 20px rgba(217, 119, 6, 0.4);
+        }
+        .button-gacha-legendary {
+            background: linear-gradient(145deg, #8b5cf6, #a78bfa); /* Purple */
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+        }
+        .button-gacha-legendary:hover {
+            background: linear-gradient(145deg, #a78bfa, #8b5cf6);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+        }
+        .button-gemini-feature {
+            background: linear-gradient(145deg, #10b981, #34d399); /* Emerald Green */
+            color: white;
+            padding: 8px 15px;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .button-gemini-feature:hover {
+            background: linear-gradient(145deg, #34d399, #10b981);
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+            transform: translateY(-1px);
+        }
+        .button-buy-gold {
+            background: linear-gradient(145deg, #38a169, #48bb78); /* Green */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 0.65rem;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(56, 161, 105, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        .button-buy-gold:hover {
+            background: linear-gradient(145deg, #48bb78, #38a169);
+            box-shadow: 0 6px 15px rgba(56, 161, 105, 0.4);
+            transform: translateY(-1px);
+        }
+        .button-cancel-expedition {
+            background-color: #ef4444; /* Red */
+            color: white;
+            padding: 8px 15px;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .button-cancel-expedition:hover {
+            background-color: #dc2626; /* Darker Red */
+            box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
+            transform: translateY(-1px);
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            transform: translateY(-50px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: #667eea;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .modal-close-button:hover {
+            color: #4c51bf;
+        }
+        .hero-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #667eea; /* Bordure de l'image du héros */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .rarity-common { color: #4a5568; } /* Gris foncé */
+        .rarity-rare { color: #3182ce; }    /* Bleu */
+        .rarity-epic { color: #805ad5; }    /* Violet */
+        .rarity-legendary { color: #d69e2e; } /* Or */
+        .rarity-ancient { color: #cc5500; } /* Ancien - marron-doré */
+        .rarity-divine { color: #00bcd4; } /* Divin - Cyan */
+        .hero-busy {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Animation pour l'invocation */
+        @keyframes summon-animation {
+            0% { transform: scale(0.5); opacity: 0; filter: blur(10px); }
+            50% { transform: scale(1.1); opacity: 1; filter: blur(0); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .summoned-hero-display {
+            animation: summon-animation 0.6s ease-out;
+        }
+
+        /* Loading spinner for LLM */
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #667eea; /* Blue */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 2s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            #game-container {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+            .main-panel {
+                flex: 2;
+                padding-right: 25px;
+            }
+            .team-panel, .sidebar-panel {
+                flex: 1;
+                min-width: 280px;
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+            .game-mode-content {
+                flex: 2; /* Main content area for modes */
+            }
+            .hero-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 colonnes sur desktop pour les inventaires */
+            }
+            .team-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 colonnes pour l'équipe */
+            }
+        }
+        @media (max-width: 767px) {
+            #game-container {
+                flex-direction: column; /* Stack vertically on small screens */
+            }
+            .main-panel, .team-panel, .sidebar-panel, .game-mode-content {
+                width: 100%;
+                padding: 0; /* Remove horizontal padding */
+            }
+            .hero-grid, .team-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 colonnes sur mobile */
+            }
+            .main-panel, .team-panel {
+                margin-bottom: 25px; /* Add space between sections */
+            }
+        }
+        /* Tab navigation for game modes */
+        #gameModeTabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            width: 100%;
+            flex-wrap: wrap; /* Allow tabs to wrap on smaller screens */
+        }
+        .tab-button {
+            background-color: #e2e8f0;
+            color: #4a5568;
+            padding: 10px 20px;
+            border-radius: 0.5rem 0.5rem 0 0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #cbd5e0;
+            border-bottom: none;
+            margin: 2px; /* Small margin for wrapped tabs */
+        }
+        .tab-button.active {
+            background-color: #ffffff;
+            color: #4c51bf;
+            border-color: #4c51bf;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        }
+        .tab-button:not(.active):hover {
+            background-color: #cbd5e0;
+        }
+        .game-mode-section {
+            display: none;
+            width: 100%;
+        }
+        .game-mode-section.active {
+            display: block;
+        }
+        #forgeHeroSelect {
+            appearance: none;
+            background-color: #f0f4f8;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.5rem;
+            padding: 10px 15px;
+            font-size: 1rem;
+            color: #4a5568;
+            cursor: pointer;
+            outline: none;
+            width: 100%;
+        }
+        #forgeHeroSelect:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container" class="flex flex-col md:flex-row p-8">
+
+        <!-- Authentication Section (initially visible, then hidden) -->
+        <div id="authSection" class="flex flex-col items-center p-8 bg-white rounded-2xl shadow-xl w-full max-w-lg mx-auto">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Connectez-vous pour jouer !</h2>
+            <div class="flex flex-col gap-4 w-full">
+                <div class="relative flex py-5 items-center">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="flex-shrink mx-4 text-gray-500">Connexion Email</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+
+                <input type="email" id="emailInput" placeholder="Email" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="password" id="passwordInput" placeholder="Mot de passe" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+                <button id="signUpEmailButton" class="button-primary bg-indigo-600 hover:bg-indigo-700">
+                    S'inscrire avec Email
+                </button>
+                <button id="signInEmailButton" class="button-primary bg-purple-600 hover:bg-purple-700">
+                    Se connecter avec Email
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Game Content (initially hidden, then shown after auth) -->
+        <div id="gameContent" class="hidden w-full flex flex-col items-center">
+            <div id="gameModeTabs" class="flex justify-center mb-6">
+                <button class="tab-button active" data-mode="home">Accueil & Invocation</button>
+                <button class="tab-button" data-mode="arena">Arène</button>
+                <button class="tab-button" data-mode="dungeon">Donjon</button>
+                <button class="tab-button" data-mode="story">Quêtes d'Histoire</button>
+                <button class="tab-button" data-mode="forge">Forgeron</button>
+                <button class="tab-button" data-mode="dailyQuests">Quêtes Quotidiennes</button>
+                <button class="tab-button" data-mode="leaderboard">Classement</button> <!-- New Leaderboard Tab -->
+            </div>
+
+            <div class="w-full flex flex-col md:flex-row gap-6">
+                <!-- Left Panel for Active Game Mode Content -->
+                <div class="game-mode-content flex-grow md:pr-6 mb-8 md:mb-0">
+                    <h1 class="section-title text-4xl mb-6 text-center text-indigo-700">Jeu RPG Gacha</h1>
+
+                    <!-- User Info & Global Stats (Always visible when logged in) -->
+                    <div class="card mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">Joueur: <span id="playerNameDisplay" class="font-bold text-blue-700"></span></h3>
+                        <p id="userIdDisplay" class="text-sm font-mono text-gray-600 break-all"></p>
+                        <button id="signOutButton" class="button-secondary mt-4">Déconnexion</button>
+                    </div>
+
+                    <div class="card p-5 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Vos Statistiques</h2>
+                        <div class="flex flex-col sm:flex-row justify-around w-full">
+                            <p class="text-xl text-gray-700 mb-2 sm:mb-0">Or: <span id="playerGold" class="font-bold text-yellow-600">0</span></p>
+                            <p class="text-xl text-gray-700">Héros Possédés: <span id="heroesOwned" class="font-bold text-green-600">0</span></p>
+                        </div>
+                    </div>
+
+
+                    <!-- HOME & SUMMONING Section -->
+                    <div id="homeMode" class="game-mode-section active">
+                        <div class="card p-5 mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Invoquer un Héros</h2>
+                            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                                <button id="summonBasicButton" class="button-primary button-gacha-basic w-full sm:w-auto">
+                                    Gacha Basique (5000 Or)
+                                </button>
+                                <button id="summonAdvancedButton" class="button-primary button-gacha-advanced w-full sm:w-auto">
+                                    Gacha Avancé (25000 Or)
+                                </button>
+                                <button id="summonLegendaryButton" class="button-primary button-gacha-legendary w-full sm:w-auto">
+                                    Gacha Légendaire (50000 Or)
+                                </button>
+                            </div>
+
+                            <div id="lastSummonedHero" class="mt-8 p-4 bg-indigo-50 rounded-xl hidden flex-col items-center">
+                                <h3 class="text-xl font-semibold text-indigo-700 mb-3">Dernier Héros Invoqué:</h3>
+                                <img id="summonedHeroImage" class="w-24 h-24 rounded-full object-cover border-2 border-indigo-400 mb-2" src="https://placehold.co/100x100/A0AEC0/FFFFFF?text=?" alt="Héros Invoqué">
+                                <p id="summonedHeroName" class="text-2xl font-bold text-indigo-900"></p>
+                                <p id="summonedHeroRarity" class="text-lg font-semibold"></p>
+                                <p id="summonedHeroStats" class="text-md text-gray-700 mt-1"></p>
+                                <button id="generateLoreButtonLast" class="button-gemini-feature">Générer une histoire ✨</button>
+                                <div id="loreDisplayLast" class="mt-4 text-sm text-gray-800 text-left w-full"></div>
+                                <div id="loreLoadingLast" class="loader hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Removed EXPEDITIONS Mode Section -->
+
+                    <!-- ARENA Mode Section -->
+                    <div id="arenaMode" class="game-mode-section">
+                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Arène</h2>
+                        <div class="card p-5 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Statistiques d'Arène:</h3>
+                            <p class="text-lg text-gray-700">Victoires: <span id="arenaWins" class="font-bold text-green-600">0</span></p>
+                            <p class="text-lg text-gray-700">Défaites: <span id="arenaLosses" class="font-bold text-red-600">0</span></p>
+                            <p class="text-lg text-gray-700">Points d'Arène: <span id="arenaPoints" class="font-bold text-blue-600">0</span></p>
+                        </div>
+                        <div class="card p-5 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Adversaire trouvé:</h3>
+                            <div id="opponentDisplay" class="text-gray-700 mb-4">Cliquez sur "Rechercher" pour trouver un adversaire.</div>
+                            <p id="arenaSearchCost" class="text-sm text-gray-600 mb-2"></p>
+                            <button id="findOpponentButton" class="button-primary w-full mb-2">Rechercher un adversaire</button>
+                            <button id="startArenaBattleButton" class="button-primary w-full bg-red-500 hover:bg-red-600">
+                                Combattre !
+                            </button>
+                            <div id="arenaResultDisplay" class="mt-4 text-lg font-bold"></div>
+                        </div>
+                        <div class="card p-5">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Boutique d'Arène</h3>
+                            <p class="text-sm text-gray-600 mb-4">Échangez vos points d'arène contre de l'or !</p>
+                            <div class="flex flex-col gap-3 w-full">
+                                <button class="button-buy-gold w-full" data-arena-cost="100" data-gold-reward="50000">
+                                    100 Points d'Arène -> 50 000 Or
+                                </button>
+                                <button class="button-buy-gold w-full" data-arena-cost="500" data-gold-reward="300000">
+                                    500 Points d'Arène -> 300 000 Or
+                                </button>
+                                <button class="button-buy-gold w-full" data-arena-cost="1000" data-gold-reward="700000">
+                                    1 000 Points d'Arène -> 700 000 Or
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DUNGEON Mode Section -->
+                    <div id="dungeonMode" class="game-mode-section">
+                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Donjon d'Exploration</h2>
+                        <div class="card p-5 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Progression du Donjon:</h3>
+                            <p class="text-lg text-gray-700">Étage actuel: <span id="dungeonCurrentFloor" class="font-bold text-blue-600">0</span></p>
+                            <p class="text-lg text-gray-700">Or accumulé: <span id="dungeonAccumulatedGold" class="font-bold text-yellow-600">0</span></p>
+                            <div id="dungeonHeroHealthDisplay" class="mt-4 text-sm text-gray-600"></div>
+                            <div id="dungeonEnemyPowerDisplay" class="mt-4 text-lg text-gray-800"></div>
+                            <div id="dungeonEnemyDescription" class="mt-2 text-sm text-gray-700 text-left w-full"></div>
+                            <div id="dungeonEnemyDescriptionLoading" class="loader hidden"></div>
+                            <button id="generateEnemyDescriptionButton" class="button-gemini-feature mt-2">Générer description d'ennemi ✨</button>
+
+                            <button id="enterDungeonButton" class="button-primary w-full mt-4">
+                                Entrer dans le Donjon
+                            </button>
+                            <button id="fightDungeonButton" class="button-primary w-full bg-green-500 hover:bg-green-600 mt-2 hidden">
+                                Combattre l'étage <span id="fightButtonFloor"></span>
+                            </button>
+                            <button id="healDungeonButton" class="button-secondary w-full mt-2 hidden">
+                                Soigner l'équipe (500 Or)
+                            </button>
+                            <button id="retreatDungeonButton" class="button-secondary w-full bg-gray-500 hover:bg-gray-600 mt-2 hidden">
+                                Fuir le Donjon
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Story Quests Mode Section -->
+                    <div id="storyMode" class="game-mode-section">
+                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Quêtes d'Histoire</h2>
+                        <div class="card p-5 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Chapitre Actuel: <span id="storyCurrentChapter" class="font-bold text-purple-600"></span></h3>
+                            <h4 class="text-lg font-bold text-gray-700">Prochaine quête: <span id="storyNextQuestName" class="font-bold text-gray-700"></span></h4>
+                            <p id="storyQuestDescription" class="text-sm text-gray-600 text-left mb-4"></p>
+                            <p class="text-sm text-gray-600 mb-2">Puissance requise: <span id="storyQuestRequiredPower" class="font-semibold"></span></p>
+                            <p class="text-sm text-gray-600 mb-4">Récompenses: <span id="storyQuestRewards" class="font-semibold"></span></p>
+                            
+                            <button id="startStoryQuestButton" class="button-primary w-full mt-4">
+                                Démarrer la Quête
+                            </button>
+                            <div id="storyNarrativeDisplay" class="mt-4 text-sm text-gray-800 text-left w-full hidden"></div>
+                            <div id="storyNarrativeLoading" class="loader hidden"></div>
+                        </div>
+                        <div class="card p-5">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Quêtes Terminées:</h3>
+                            <ul id="completedStoryQuests" class="text-left text-gray-700 list-disc pl-5">
+                                <li>Aucune quête terminée pour l'instant.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- FORGE Mode Section -->
+                    <div id="forgeMode" class="game-mode-section">
+                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Le Forgeron</h2>
+                        <div class="card p-5 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Améliorer un Héros</h3>
+                            <p class="text-sm text-gray-600 mb-4">Sélectionnez un héros pour l'améliorer et augmenter ses statistiques.</p>
+                            <select id="forgeHeroSelect" class="p-3 border border-gray-300 rounded-lg w-full mb-4">
+                                <option value="">-- Sélectionnez un héros --</option>
+                            </select>
+
+                            <div id="selectedForgeHeroDisplay" class="hidden flex-col items-center gap-2 mb-4 p-3 bg-blue-50 rounded-lg">
+                                <img id="forgeHeroImage" class="w-20 h-20 rounded-full object-cover border-2 border-blue-400" src="https://placehold.co/80x80/A0AEC0/FFFFFF?text=?" alt="Héros à forger">
+                                <p class="text-lg font-bold text-blue-800" id="forgeHeroName"></p>
+                                <p class="text-md text-blue-700" id="forgeHeroRarity"></p>
+                                <p class="text-sm text-gray-700" id="forgeHeroCurrentStats"></p>
+                                <p class="text-sm text-gray-700">Niveau d'amélioration: <span id="forgeHeroUpgradeLevel" class="font-bold"></span></p>
+                                <p class="text-sm text-green-700 font-semibold" id="forgeHeroNextStats"></p>
+                            </div>
+
+                            <p class="text-md text-gray-800 mb-4">Coût d'amélioration: <span id="forgeCost" class="font-bold text-yellow-600">0</span> Or</p>
+                            <button id="upgradeHeroButton" class="button-primary w-full" disabled>Améliorer</button>
+                        </div>
+                    </div>
+
+                    <!-- DAILY QUESTS Mode Section -->
+                    <div id="dailyQuestsMode" class="game-mode-section">
+                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Quêtes Quotidiennes</h2>
+                        <div class="card p-5 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Quêtes du Jour</h3>
+                            <div id="dailyQuestsList" class="flex flex-col gap-3 text-left w-full">
+                                <!-- Daily quests will be dynamically added here -->
+                                <p>Chargement des quêtes...</p>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-4">Réinitialisation dans: <span id="dailyQuestResetTimer" class="font-bold"></span></p>
+                        </div>
+                    </div>
+
+                    <!-- LEADERBOARD Mode Section -->
+                    <div id="leaderboardMode" class="game-mode-section">
+                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Classement des Héros</h2>
+                        <div class="card p-5 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Top 10 des Joueurs</h3>
+                            <ul id="leaderboardList" class="text-left text-gray-700 w-full">
+                                <!-- Leaderboard entries will be dynamically added here -->
+                                <li class="py-2 border-b border-gray-200 last:border-b-0">Chargement du classement...</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Panels (Team & Inventory - Always visible) -->
+                <div class="right-panels w-full md:w-1/3 flex flex-col gap-6">
+                    <!-- Team Panel -->
+                    <div class="team-panel w-full md:mx-4 mb-8 md:mb-0">
+                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Votre Équipe (<span id="teamCount">0</span>/6)</h2>
+                        <div class="card p-5 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Puissance de l'équipe: <span id="teamPower" class="font-bold text-purple-700">0</span> ATK</h3>
+                            <button id="collectTeamGoldButton" class="button-primary w-full sm:w-auto">
+                                Collecter l'or de l'équipe (<span id="goldToCollect">0</span>)
+                            </button>
+                        </div>
+                        <div id="teamInventory" class="grid team-grid grid-cols-2 gap-4">
+                            <!-- Team members will be dynamically added here -->
+                            <div class="card">
+                                <p class="text-sm font-semibold text-gray-700">Aucun Héros dans l'équipe</p>
+                                <p class="text-xs text-gray-500">Ajoutez-en depuis l'inventaire !</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Panel (Hero Inventory) -->
+                    <div class="sidebar-panel w-full md:ml-6">
+                        <h2 class="section-title text-3xl mb-6 text-center text-gray-800">Votre Inventaire</h2>
+                        <div id="heroInventory" class="grid hero-grid grid-cols-2 gap-4">
+                            <!-- Heroes will be dynamically added here -->
+                            <div class="card">
+                                <p class="text-sm font-semibold text-gray-700">Aucun Héros (hors équipe)</p>
+                                <p class="text-xs text-gray-500">Invoquez-en ou retirez-les de l'équipe !</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Summon Modal -->
+    <div id="heroSummonModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close-button" onclick="closeModal()">&times;</button>
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Nouveau Héros !</h2>
+            <img id="modalHeroImage" class="hero-image" src="https://placehold.co/150x150/A0AEC0/FFFFFF?text=?" alt="Héros Invoqué">
+            <p id="modalHeroName" class="text-3xl font-bold text-indigo-900"></p>
+            <p id="modalHeroRarity" class="text-xl font-semibold"></p>
+            <p id="modalHeroStats" class="text-lg text-gray-700 mt-2"></p>
+            <button id="generateLoreButtonModal" class="button-gemini-feature">Générer une histoire ✨</button>
+            <div id="loreDisplayModal" class="mt-4 text-base text-gray-800 text-left w-full"></div>
+            <div id="loreLoadingModal" class="loader hidden"></div>
+            <button class="button-primary mt-4" onclick="closeModal()">Super !</button>
+        </div>
+    </div>
+
+    <!-- Nickname Modal -->
+    <div id="nicknameModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Choisissez votre Pseudo</h2>
+            <p class="text-gray-700 mb-4">Ce pseudo sera visible par les autres joueurs dans le classement.</p>
+            <input type="text" id="nicknameInput" placeholder="Entrez votre pseudo" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full">
+            <button id="saveNicknameButton" class="button-primary mt-4">Sauvegarder Pseudo</button>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getAuth,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, query, collection, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+
+
+        // Votre configuration Firebase fournie par l'utilisateur
+        const firebaseConfig = {
+            apiKey: "AIzaSyAvKBmg3JljK5AdKHLyQ40R_N0Nrm3e1lk",
+            authDomain: "rpg-5556a.firebaseapp.com",
+            projectId: "rpg-5556a",
+            storageBucket: "rpg-5556a.firebasestorage.app",
+            messagingSenderId: "397146793804",
+            appId: "1:397146793804:web:5268877781b3ccdb8311e9",
+            measurementId: "G-M9B3SR1439"
+        };
+
+
+        // Global variables for Firebase and user data
+        let app;
+        let db;
+        let auth;
+        let analytics;
+        let userId = null; // Null initially, will be set on successful login
+        let unsubscribeFromPlayerData = null; // To store the onSnapshot unsubscribe function
+        let unsubscribeFromLeaderboard = null; // To store the onSnapshot for leaderboard
+        let currentHeroForLore = null; // To store the hero object when generating lore
+        let currentMode = 'home'; // Tracks the active game mode tab
+
+        // Player game state
+        let playerName = "Invité"; // Default player name
+        let playerGold = 0; // Will be set to 5000 if new or reinitialized
+        let playerHeroes = []; // Full hero objects, each with a unique 'id'
+        let teamHeroIds = []; // Array of hero IDs currently in the team
+        let goldToCollect = 0; // Gold accumulated by team, ready to be collected
+
+        // New game mode specific states
+        let playerArenaStats = { wins: 0, losses: 0, points: 0, dailySearches: 0, lastSearchReset: 0 }; // Added dailySearches and lastSearchReset
+        let playerDungeonState = {
+            active: false,
+            currentFloor: 0,
+            accumulatedGold: 0,
+            heroHpMap: {}, // { heroId: currentHp }
+            dungeonTeamHeroIds: [], // IDs of heroes in the current dungeon run
+            maxHpMap: {} // { heroId: maxHp }
+        };
+        // Story Quest state
+        let playerStoryState = {
+            currentChapter: 1,
+            completedQuestIds: [] // Store IDs of completed quests
+        };
+        // Forge state (no specific state, just heroes with upgradeLevel)
+        // Daily Quest state
+        const DAILY_QUESTS_DEFINITIONS = {
+            summonHero: { description: "Invoquer 1 Héros", target: 1, rewardGold: 5000 },
+            arenaWin: { description: "Gagner 1 Bataille d'Arène", target: 1, rewardGold: 7500 },
+            dungeonFloors: { description: "Terminer 3 Étages de Donjon", target: 3, rewardGold: 10000 },
+            storyQuest: { description: "Démarrer 1 Quête d'Histoire", target: 1, rewardGold: 12000 }
+        };
+        let playerDailyQuests = {
+            lastReset: 0, // Timestamp of last reset
+            quests: {} // { questType: { progress: number, completed: boolean, claimed: boolean } }
+        };
+
+
+        // Constants for game mechanics
+        const TEAM_MAX_SIZE = 6;
+        const GOLD_GEN_FACTOR = 10; // Gold generated per team ATK point per "tick"
+        const GOLD_GEN_INTERVAL_MS = 3000; // Generate gold every 3 seconds
+        const DUNGEON_HEAL_COST = 500;
+        const DUNGEON_MAX_FLOOR = 50; // Increased max dungeon floors
+        const DUNGEON_FLOOR_GOLD_REWARD = 500; // Increased gold per floor cleared
+        const ARENA_FREE_SEARCHES_PER_DAY = 3;
+        const ARENA_PAID_SEARCH_COST = 100;
+
+        let goldGenerationInterval; // To store the interval ID
+        let dailyQuestTimerInterval; // For daily quest reset timer
+        let arenaSearchResetInterval; // For arena search reset timer
+
+        // Hero data with rarity, placeholder images, and stats
+        const HEROES_DATA = [
+            // Existing Common (10 heroes)
+            { name: "Guerrier Novice", rarity: "Common", stats: { atk: 10, def: 5, hp: 100 }, imageUrl: "https://placehold.co/100x100/808080/FFFFFF?text=G1" },
+            { name: "Archère Débutante", rarity: "Common", stats: { atk: 8, def: 4, hp: 90 }, imageUrl: "https://placehold.co/100x100/808080/FFFFFF?text=A1" },
+            { name: "Mage Apprenti", rarity: "Common", stats: { atk: 12, def: 3, hp: 80 }, imageUrl: "https://placehold.co/100x100/808080/FFFFFF?text=M1" },
+            { name: "Espion Silencieux", rarity: "Common", stats: { atk: 11, def: 6, hp: 95 }, imageUrl: "https://placehold.co/100x100/708090/FFFFFF?text=E1" },
+            { name: "Paysan Courageux", rarity: "Common", stats: { atk: 7, def: 7, hp: 110 }, imageUrl: "https://placehold.co/100x100/778899/FFFFFF?text=P1" },
+            { name: "Scribe Erudit", rarity: "Common", stats: { atk: 6, def: 8, hp: 85 }, imageUrl: "https://placehold.co/100x100/808080/FFFFFF?text=S2" },
+            { name: "Mineur Robuste", rarity: "Common", stats: { atk: 9, def: 10, hp: 120 }, imageUrl: "https://placehold.co/100x100/708090/FFFFFF?text=M2" },
+            { name: "Pêcheur Agile", rarity: "Common", stats: { atk: 8, def: 5, hp: 90 }, imageUrl: "https://placehold.co/100x100/778899/FFFFFF?text=P2" },
+            { name: "Forgeron Habile", rarity: "Common", stats: { atk: 10, def: 9, hp: 115 }, imageUrl: "https://placehold.co/100x100/808080/FFFFFF?text=F1" },
+            { name: "Tisserande Discrète", rarity: "Common", stats: { atk: 7, def: 6, hp: 75 }, imageUrl: "https://placehold.co/100x100/708090/FFFFFF?text=T1" },
+
+            // Existing Rare (15 heroes)
+            { name: "Chevalier Vaillant", rarity: "Rare", stats: { atk: 15, def: 10, hp: 120 }, imageUrl: "https://placehold.co/100x100/3182CE/FFFFFF?text=C1" },
+            { name: "Chasseuse Agile", rarity: "Rare", stats: { atk: 18, def: 7, hp: 110 }, imageUrl: "https://placehold.co/100x100/3182CE/FFFFFF?text=H1" },
+            { name: "Sorcier Arcane", rarity: "Rare", stats: { atk: 20, def: 6, hp: 100 }, imageUrl: "https://placehold.co/100x100/3182CE/FFFFFF?text=S1" },
+            { name: "Berserker Furieux", rarity: "Rare", stats: { atk: 22, def: 8, hp: 130 }, imageUrl: "https://placehold.co/100x100/4682B4/FFFFFF?text=B1" },
+            { name: "Guérisseur Sacré", rarity: "Rare", stats: { atk: 10, def: 15, hp: 115 }, imageUrl: "https://placehold.co/100x100/6A5ACD/FFFFFF?text=G2" },
+            { name: "Ingénieur Mécanicien", rarity: "Rare", stats: { atk: 14, def: 9, hp: 105 }, imageUrl: "https://placehold.co/100x100/5F9EA0/FFFFFF?text=I1" },
+            { name: "Danseuse des Lames", rarity: "Rare", stats: { atk: 19, def: 6, hp: 98 }, imageUrl: "https://placehold.co/100x100/DAA520/FFFFFF?text=D1" },
+            { name: "Moine Pacifique", rarity: "Rare", stats: { atk: 16, def: 12, hp: 125 }, imageUrl: "https://placehold.co/100x100/6A5ACD/FFFFFF?text=M3" },
+            { name: "Voleur de l'Ombre", rarity: "Rare", stats: { atk: 21, def: 5, hp: 90 }, imageUrl: "https://placehold.co/100x100/4B0082/FFFFFF?text=V2" },
+            { name: "Garde Royal", rarity: "Rare", stats: { atk: 17, def: 14, hp: 140 }, imageUrl: "https://placehold.co/100x100/4169E1/FFFFFF?text=G3" },
+            { name: "Chamane Esprit", rarity: "Rare", stats: { atk: 13, def: 11, hp: 108 }, imageUrl: "https://placehold.co/100x100/228B22/FFFFFF?text=C2" },
+            { name: "Alchimiste Fou", rarity: "Rare", stats: { atk: 16, def: 8, hp: 95 }, imageUrl: "https://placehold.co/100x100/B8860B/FFFFFF?text=A2" },
+            { name: "Navigateur Solitaire", rarity: "Rare", stats: { atk: 15, def: 9, hp: 112 }, imageUrl: "https://placehold.co/100x100/B0C4DE/FFFFFF?text=N2" },
+            { name: "Barde Inspirant", rarity: "Rare", stats: { atk: 12, def: 7, hp: 100 }, imageUrl: "https://placehold.co/100x100/CD853F/FFFFFF?text=B2" },
+            { name: "Maître des Bêtes", rarity: "Rare", stats: { atk: 18, def: 10, hp: 130 }, imageUrl: "https://placehold.co/100x100/8B4513/FFFFFF?text=M4" },
+
+            // Existing Epic (15 heroes)
+            { name: "Dragonnier Ancien", rarity: "Epic", stats: { atk: 25, def: 15, hp: 150 }, imageUrl: "https://placehold.co/100x100/805AD5/FFFFFF?text=D2" },
+            { name: "Maître Lame", rarity: "Epic", stats: { atk: 28, def: 12, hp: 140 }, imageUrl: "https://placehold.co/100x100/805AD5/FFFFFF?text=L2" },
+            { name: "Prêtresse Lumière", rarity: "Epic", stats: { atk: 22, def: 18, hp: 130 }, imageUrl: "https://placehold.co/100x100/805AD5/FFFFFF?text=P3" },
+            { name: "Ombre Fantomatique", rarity: "Epic", stats: { atk: 30, def: 10, hp: 125 }, imageUrl: "https://placehold.co/100x100/4B0082/FFFFFF?text=O1" },
+            { name: "Golem de Fer", rarity: "Epic", stats: { atk: 20, def: 25, hp: 180 }, imageUrl: "https://placehold.co/100x100/6A5ACD/FFFFFF?text=G4" },
+            { name: "Nécromancien Obscur", rarity: "Epic", stats: { atk: 32, def: 9, hp: 120 }, imageUrl: "https://placehold.co/100x100/2F4F4F/FFFFFF?text=N3" },
+            { name: "Capitaine Royal", rarity: "Epic", stats: { atk: 26, def: 17, hp: 160 }, imageUrl: "https://placehold.co/100x100/4169E1/FFFFFF?text=C3" },
+            { name: "Gardien des Runes", rarity: "Epic", stats: { atk: 24, def: 20, hp: 170 }, imageUrl: "https://placehold.co/100x100/5F9EA0/FFFFFF?text=G5" },
+            { name: "Artificier de Cristal", rarity: "Epic", stats: { atk: 27, def: 14, hp: 135 }, imageUrl: "https://placehold.co/100x100/8A2BE2/FFFFFF?text=A3" },
+            { name: "Sorcière des Glaces", rarity: "Epic", stats: { atk: 29, def: 11, hp: 128 }, imageUrl: "https://placehold.co/100x100/00CED1/FFFFFF?text=S3" },
+            { name: "Paladin Justicier", rarity: "Epic", stats: { atk: 23, def: 22, hp: 190 }, imageUrl: "https://placehold.co/100x100/FFD700/FFFFFF?text=P4" },
+            { name: "Esprit de la Forêt", rarity: "Epic", stats: { atk: 20, def: 19, hp: 165 }, imageUrl: "https://placehold.co/100x100/228B22/FFFFFF?text=E2" },
+            { name: "Épéiste Céleste", rarity: "Epic", stats: { atk: 31, def: 13, hp: 145 }, imageUrl: "https://placehold.co/100x100/1E90FF/FFFFFF?text=E3" },
+            { name: "Valkyrie Guerrière", rarity: "Epic", stats: { atk: 27, def: 16, hp: 155 }, imageUrl: "https://placehold.co/100x100/DDA0DD/FFFFFF?text=V3" },
+            { name: "Démolisseur Nain", rarity: "Epic", stats: { atk: 25, def: 24, hp: 195 }, imageUrl: "https://placehold.co/100x100/CD5C5C/FFFFFF?text=D3" },
+
+            // Existing Legendary (15 heroes)
+            { name: "Roi Mythique", rarity: "Legendary", stats: { atk: 40, def: 25, hp: 200 }, imageUrl: "https://placehold.co/100x100/D69E2E/FFFFFF?text=K1" },
+            { name: "Reine Céleste", rarity: "Legendary", stats: { atk: 35, def: 30, hp: 180 }, imageUrl: "https://placehold.co/100x100/D69E2E/FFFFFF?text=Q1" },
+            { name: "Démon Suprême", rarity: "Legendary", stats: { atk: 45, def: 20, hp: 190 }, imageUrl: "https://placehold.co/100x100/B22222/FFFFFF?text=D4" },
+            { name: "Ange Gardien", rarity: "Legendary", stats: { atk: 30, def: 40, hp: 220 }, imageUrl: "https://placehold.co/100x100/FFD700/FFFFFF?text=A4" },
+            { name: "Seigneur des Abysses", rarity: "Legendary", stats: { atk: 50, def: 28, hp: 210 }, imageUrl: "https://placehold.co/100x100/000080/FFFFFF?text=S4" },
+            { name: "Oracle Éternel", rarity: "Legendary", stats: { atk: 38, def: 35, hp: 195 }, imageUrl: "https://placehold.co/100x100/8B008B/FFFFFF?text=O2" },
+            { name: "Phénix Cendré", rarity: "Legendary", stats: { atk: 42, def: 22, hp: 205 }, imageUrl: "https://placehold.co/100x100/FF4500/FFFFFF?text=P5" },
+            { name: "Samouraï Impérial", rarity: "Legendary", stats: { atk: 48, def: 26, hp: 200 }, imageUrl: "https://placehold.co/100x100/8B0000/FFFFFF?text=S5" },
+            { name: "Déesse des Étoiles", rarity: "Legendary", stats: { atk: 37, def: 38, hp: 230 }, imageUrl: "https://placehold.co/100x100/9400D3/FFFFFF?text=D5" },
+            { name: "Machine de Guerre Ultime", rarity: "Legendary", stats: { atk: 55, def: 30, hp: 240 }, imageUrl: "https://placehold.co/100x100/778899/FFFFFF?text=M5" },
+            { name: "Sorcière Cosmique", rarity: "Legendary", stats: { atk: 43, def: 21, hp: 185 }, imageUrl: "https://placehold.co/100x100/6A5ACD/FFFFFF?text=S6" },
+            { name: "Grand Maître Ninja", rarity: "Legendary", stats: { atk: 52, def: 24, hp: 198 }, imageUrl: "https://placehold.co/100x100/000000/FFFFFF?text=G6" },
+            { name: "Légionnaire Élite", rarity: "Legendary", stats: { atk: 46, def: 32, hp: 215 }, imageUrl: "https://placehold.co/100x100/4169E1/FFFFFF?text=L3" },
+            { name: "Sentinelle Ancienne", rarity: "Legendary", stats: { atk: 39, def: 39, hp: 250 }, imageUrl: "https://placehold.co/100x100/7B68EE/FFFFFF?text=S7" },
+            { name: "Tempête Vivante", rarity: "Legendary", stats: { atk: 47, def: 27, hp: 210 }, imageUrl: "https://placehold.co/100x100/4682B4/FFFFFF?text=T2" },
+
+            // Existing Ancient (10 heroes)
+            { name: "Chronos le Maître du Temps", rarity: "Ancient", stats: { atk: 60, def: 35, hp: 280 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=C4" },
+            { name: "Bête Primordiale", rarity: "Ancient", stats: { atk: 65, def: 40, hp: 300 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=B3" },
+            { name: "Esprit de la Création", rarity: "Ancient", stats: { atk: 58, def: 45, hp: 270 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=E4" },
+            { name: "Forgeron des Âges", rarity: "Ancient", stats: { atk: 62, def: 38, hp: 290 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=F2" },
+            { name: "Gardien des Portails", rarity: "Ancient", stats: { atk: 59, def: 42, hp: 285 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=G7" },
+            { name: "Seigneur du Vide", rarity: "Ancient", stats: { atk: 68, def: 30, hp: 275 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=S8" },
+            { name: "Titan Endormi", rarity: "Ancient", stats: { atk: 55, def: 50, hp: 320 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=T3" },
+            { name: "Sage Cosmique", rarity: "Ancient", stats: { atk: 57, def: 40, hp: 260 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=S9" },
+            { name: "Champion Déchu", rarity: "Ancient", stats: { atk: 63, def: 37, hp: 295 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=C5" },
+            { name: "Écho de l'Infini", rarity: "Ancient", stats: { atk: 61, def: 39, hp: 288 }, imageUrl: "https://placehold.co/100x100/cc5500/FFFFFF?text=E5" },
+
+            // Existing Divine (5 heroes)
+            { name: "Aspect de la Lumière", rarity: "Divine", stats: { atk: 75, def: 50, hp: 350 }, imageUrl: "https://placehold.co/100x100/00bcd4/FFFFFF?text=A5" },
+            { name: "Avatar des Ténèbres", rarity: "Divine", stats: { atk: 80, def: 45, hp: 340 }, imageUrl: "https://placehold.co/100x100/00bcd4/FFFFFF?text=A6" },
+            { name: "Le Tout-Puissant", rarity: "Divine", stats: { atk: 78, def: 48, hp: 360 }, imageUrl: "https://placehold.co/100x100/00bcd4/FFFFFF?text=T4" },
+            { name: "Origine du Chaos", rarity: "Divine", stats: { atk: 85, def: 40, hp: 330 }, imageUrl: "https://placehold.co/100x100/00bcd4/FFFFFF?text=O3" },
+            { name: "Volonté Cosmique", rarity: "Divine", stats: { atk: 70, def: 55, hp: 370 }, imageUrl: "https://placehold.co/100x100/00bcd4/FFFFFF?text=V4" }
+        ];
+
+        // Function to generate new heroes
+        function generateMoreHeroes(count, rarity, baseAtk, atkRange, baseDef, defRange, baseHp, hpRange, imageUrlPrefix) {
+            const newHeroes = [];
+            for (let i = 0; i < count; i++) {
+                const atk = baseAtk + Math.floor(Math.random() * atkRange);
+                const def = baseDef + Math.floor(Math.random() * defRange);
+                const hp = baseHp + Math.floor(Math.random() * hpRange);
+                newHeroes.push({
+                    name: `${rarity} Héros ${i + 1}`, // Generic name for generated heroes
+                    rarity: rarity,
+                    stats: { atk, def, hp },
+                    imageUrl: `https://placehold.co/100x100/${imageUrlPrefix}/${i + 1}`,
+                    upgradeLevel: 0 // Initialize upgrade level
+                });
+            }
+            return newHeroes;
+        }
+
+        // Add 100+ new heroes:
+        // Common: 30
+        HEROES_DATA.push(...generateMoreHeroes(30, "Common", 9, 7, 4, 5, 80, 40, "B0B0B0/FFFFFF?text=GC"));
+        // Rare: 25
+        HEROES_DATA.push(...generateMoreHeroes(25, "Rare", 18, 10, 7, 8, 100, 50, "4682B4/FFFFFF?text=GR"));
+        // Epic: 20
+        HEROES_DATA.push(...generateMoreHeroes(20, "Epic", 27, 12, 12, 10, 130, 60, "9370DB/FFFFFF?text=GE"));
+        // Legendary: 15
+        HEROES_DATA.push(...generateMoreHeroes(15, "Legendary", 40, 15, 20, 12, 180, 70, "FFD700/FFFFFF?text=GL"));
+        // Ancient: 7
+        HEROES_DATA.push(...generateMoreHeroes(7, "Ancient", 55, 20, 30, 15, 250, 80, "CD853F/FFFFFF?text=GA"));
+        // Divine: 3
+        HEROES_DATA.push(...generateMoreHeroes(3, "Divine", 70, 25, 40, 20, 300, 100, "00BFFF/FFFFFF?text=GD"));
+
+
+        // Rarity probabilities for different gacha types
+        const GACHA_TYPES = {
+            "basic": {
+                cost: 5000, // Increased cost
+                probabilities: {
+                    "Common": 0.60, // 60% chance
+                    "Rare": 0.30,   // 30% chance
+                    "Epic": 0.08,   // 8% chance
+                    "Legendary": 0.02, // 2% chance
+                    "Ancient": 0.00, // 0% chance
+                    "Divine": 0.00  // 0% chance
+                }
+            },
+            "advanced": {
+                cost: 25000, // Increased cost
+                probabilities: {
+                    "Common": 0.30, // 30% chance
+                    "Rare": 0.40,   // 40% chance
+                    "Epic": 0.20,   // 20% chance
+                    "Legendary": 0.08, // 8% chance
+                    "Ancient": 0.02, // 2% chance
+                    "Divine": 0.00  // 0% chance
+                }
+            },
+            "legendary": {
+                cost: 50000, // Increased cost
+                probabilities: {
+                    "Common": 0.00, // 0% chance
+                    "Rare": 0.15,   // 15% chance
+                    "Epic": 0.40,   // 40% chance
+                    "Legendary": 0.30, // 30% chance
+                    "Ancient": 0.10, // 10% chance
+                    "Divine": 0.05  // 5% chance
+                }
+            }
+        };
+
+        // Story Quests Data - EXTENDED
+        const STORY_QUESTS_DATA = [
+            {
+                id: "quest1_ch1",
+                chapter: 1,
+                name: "L'Appel du Druide",
+                description: "Un ancien druide a besoin d'aide pour purifier la Forêt Murmurante, corrompue par une énergie sombre. Le chemin est semé d'embûches et de créatures affligées.",
+                requiredPower: 100,
+                enemyPower: 120,
+                rewards: { gold: 200000, items: ["Herbe Lunaire"] },
+                storyImage: "https://placehold.co/100x100/808080/FFFFFF?text=Foret"
+            },
+            {
+                id: "quest2_ch1",
+                chapter: 1,
+                name: "Le Secret des Montagnes Gelées",
+                description: "Une créature légendaire hante les sommets glacés, menaçant les villages. Il faut percer son mystère et la vaincre pour rétablir la paix.",
+                requiredPower: 250,
+                enemyPower: 280,
+                rewards: { gold: 350000, items: ["Fragment de Glace Pure"], newHeroChance: "Rare" },
+                storyImage: "https://placehold.co/100x100/3182CE/FFFFFF?text=Montagne"
+            },
+            {
+                id: "quest3_ch2",
+                chapter: 2,
+                name: "L'Ombre du Seigneur des Abysses",
+                description: "Le Seigneur des Abysses a réveillé d'anciennes horreurs dans son domaine souterrain. Votre équipe doit l'explorer et l'arrêter avant que le monde ne soit englouti par les ténèbres.",
+                requiredPower: 400,
+                enemyPower: 450,
+                rewards: { gold: 500000, items: ["Éclat Abyssal"], newHeroChance: "Epic" },
+                storyImage: "https://placehold.co/100x100/4B0082/FFFFFF?text=Abysses"
+            },
+            {
+                id: "quest4_ch2",
+                chapter: 2,
+                name: "Le Cœur du Volcan Endormi",
+                description: "Un volcan endormi montre des signes de réveil, et une entité primordiale s'y est nichée. Vous devez la sceller avant que la catastrophe ne dévaste la région.",
+                requiredPower: 550,
+                enemyPower: 600,
+                rewards: { gold: 750000, items: ["Roche de magma"], newHeroChance: "Epic" },
+                storyImage: "https://placehold.co/100x100/FF4500/FFFFFF?text=Volcan"
+            },
+            {
+                id: "quest5_ch3",
+                chapter: 3,
+                name: "Le Retour du Roi Déchu",
+                description: "Un ancien roi maléfique est revenu pour réclamer son trône, et son armée de morts-vivants menace tout. Mettez fin à son règne de terreur et restaurez la lumière.",
+                requiredPower: 700,
+                enemyPower: 780,
+                rewards: { gold: 1000000, items: ["Couronne brisée"], newHeroChance: "Legendary" },
+                storyImage: "https://placehold.co/100x100/B22222/FFFFFF?text=Roi"
+            },
+            {
+                id: "quest6_ch3",
+                chapter: 3,
+                name: "La Source des Songes",
+                description: "Une entité mystérieuse manipule les rêves du royaume, plongeant les habitants dans un sommeil éternel. Il faut trouver la Source des Songes et la neutraliser.",
+                requiredPower: 900, // Increased
+                enemyPower: 950, // Increased
+                rewards: { gold: 1200000, items: ["Poussière de Rêve"], newHeroChance: "Legendary" },
+                storyImage: "https://placehold.co/100x100/9400D3/FFFFFF?text=Songes"
+            },
+            {
+                id: "quest7_ch4",
+                chapter: 4,
+                name: "Le Jugement des Anciens",
+                description: "Les esprits des Anciens sont agités par un déséquilibre cosmique. Vous devez prouver votre valeur et leur force pour apaiser leur courroux et rétablir l'ordre.",
+                requiredPower: 1100, // Increased
+                enemyPower: 1200, // Increased
+                rewards: { gold: 1500000, items: ["Pierre Ancestrale"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/cc5500/FFFFFF?text=Ancien"
+            },
+            {
+                id: "quest8_ch4",
+                chapter: 4,
+                name: "L'Éveil du Chaos",
+                description: "Des fissures apparaissent dans la réalité, libérant des fragments de chaos pur. Scellez les brèches et repoussez les abominations avant que le monde ne s'effondre.",
+                requiredPower: 1300, // Increased
+                enemyPower: 1400, // Increased
+                rewards: { gold: 1800000, items: ["Essence de Chaos"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/8B0000/FFFFFF?text=Chaos"
+            },
+            {
+                id: "quest9_ch5",
+                chapter: 5,
+                name: "La Lumière Éternelle",
+                description: "Une ombre cosmique menace d'engloutir toute lumière. Invoquez la lumière éternelle et affrontez l'obscurité pour sauver l'existence.",
+                requiredPower: 1500,
+                enemyPower: 1600,
+                rewards: { gold: 2500000, items: ["Fragment de Lumière Divine"], newHeroChance: "Divine" },
+                storyImage: "https://placehold.co/100x100/00bcd4/FFFFFF?text=Lumiere"
+            },
+            {
+                id: "quest10_ch5",
+                chapter: 5,
+                name: "Le Nexus du Destin",
+                description: "Au cœur du Nexus, les fils du destin s'entremêlent. Une entité inconnue cherche à les manipuler. Protégez l'équilibre du monde.",
+                requiredPower: 1800,
+                enemyPower: 1900,
+                rewards: { gold: 3000000, items: ["Cristal de Destin"], newHeroChance: "Legendary" },
+                storyImage: "https://placehold.co/100x100/556B2F/FFFFFF?text=Nexus"
+            },
+            {
+                id: "quest11_ch6",
+                chapter: 6,
+                name: "Les Échos du Temps Perdu",
+                description: "Des anomalies temporelles perturbent le présent. Suivez les échos du passé pour corriger les erreurs et rétablir le flux du temps.",
+                requiredPower: 2200,
+                enemyPower: 2300,
+                rewards: { gold: 4000000, items: ["Sable Temporel"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/98FB98/FFFFFF?text=Temps"
+            },
+            {
+                id: "quest12_ch6",
+                chapter: 6,
+                name: "Le Sanctuaire Céleste",
+                description: "Un sanctuaire flottant, autrefois le foyer des esprits pur, est tombé sous l'emprise d'un mal céleste. Libérez-le de son emprise corruptrice.",
+                requiredPower: 2600,
+                enemyPower: 2700,
+                rewards: { gold: 5000000, items: ["Plume Céleste"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/87CEFA/FFFFFF?text=Sanctuaire"
+            },
+            {
+                id: "quest13_ch7",
+                chapter: 7,
+                name: "La Fureur des Géants",
+                description: "Des géants endormis se sont réveillés, menaçant de détruire des cités entières. Calmez leur fureur ou affrontez leur puissance colossale.",
+                requiredPower: 3000,
+                enemyPower: 3200,
+                rewards: { gold: 6000000, items: ["Éclat de Pierre Géante"], newHeroChance: "Legendary" },
+                storyImage: "https://placehold.co/100x100/A9A9A9/FFFFFF?text=Geants"
+            },
+            {
+                id: "quest14_ch7",
+                chapter: 7,
+                name: "Le Miroir de l'Âme",
+                description: "Un artefact ancien, le Miroir de l'Âme, corrompt ceux qui le regardent. Détruisez-le avant que son influence ne submerge le monde.",
+                requiredPower: 3500,
+                enemyPower: 3700,
+                rewards: { gold: 7500000, items: ["Poussière d'Âme"], newHeroChance: "Legendary" },
+                storyImage: "https://placehold.co/100x100/6A5ACD/FFFFFF?text=Miroir"
+            },
+            {
+                id: "quest15_ch8",
+                chapter: 8,
+                name: "Le Souffle du Dragon Ardent",
+                description: "Un dragon ancestral s'est réveillé dans les terres volcaniques, semant la destruction. Seule une équipe de légende pourra l'affronter et survivre.",
+                requiredPower: 4000,
+                enemyPower: 4200,
+                rewards: { gold: 9000000, items: ["Écaille de Dragon"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/FF6347/FFFFFF?text=Dragon"
+            },
+            {
+                id: "quest16_ch8",
+                chapter: 8,
+                name: "Les Lamentations des Esprits Oubliés",
+                description: "Un lieu hanté par des esprits tourmentés menace de déborder dans le monde des vivants. Apportez-leur la paix ou combattez leur désespoir.",
+                requiredPower: 4500,
+                enemyPower: 4700,
+                rewards: { gold: 11000000, items: ["Larme d'Esprit"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/2F4F4F/FFFFFF?text=Esprit"
+            },
+            {
+                id: "quest17_ch9",
+                chapter: 9,
+                name: "La Convergence des Mondes",
+                description: "Des dimensions commencent à fusionner, créant des créatures aberrantes. Rétablissez l'ordre cosmique avant que le tissu de la réalité ne se déchire.",
+                requiredPower: 5000,
+                enemyPower: 5200,
+                rewards: { gold: 13000000, items: ["Fragment Dimensionnel"], newHeroChance: "Legendary" },
+                storyImage: "https://placehold.co/100x100/483D8B/FFFFFF?text=Mondes"
+            },
+            {
+                id: "quest18_ch9",
+                chapter: 9,
+                name: "Le Gardien des Portes Étoilées",
+                description: "Un ancien gardien protège les portails vers d'autres étoiles, mais une force obscure le corrompt. Libérez-le pour voyager au-delà des confins connus.",
+                requiredPower: 5500,
+                enemyPower: 5700,
+                rewards: { gold: 15000000, items: ["Clé Stellaire"], newHeroChance: "Ancient" },
+                storyImage: "https://placehold.co/100x100/7B68EE/FFFFFF?text=Portails"
+            },
+            {
+                id: "quest19_ch10",
+                chapter: 10,
+                name: "L'Ascension du Mal Absolu",
+                description: "Le mal absolu rassemble ses forces pour plonger le monde dans les ténèbres éternelles. C'est le moment de la confrontation finale.",
+                requiredPower: 6000,
+                enemyPower: 6300,
+                rewards: { gold: 20000000, items: ["Cœur des Ténèbres"], newHeroChance: "Divine" },
+                storyImage: "https://placehold.co/100x100/000000/FFFFFF?text=Mal"
+            },
+            {
+                id: "quest20_ch10",
+                chapter: 10,
+                name: "Le Scellement du Grand Ancien",
+                description: "Au-delà des étoiles, le Grand Ancien attend son réveil pour dévorer la réalité. Seule une équipe avec des pouvoirs divins peut l'affronter et le sceller à jamais.",
+                requiredPower: 6500,
+                enemyPower: 6800,
+                rewards: { gold: 25000000, items: ["Sigil Divin", "Artefact Cosmique"], newHeroChance: "Divine" },
+                storyImage: "https://placehold.co/100x100/00bcd4/FFFFFF?text=AncienDivin"
+            }
+        ];
+
+
+        // UI Element References
+        const playerNameDisplay = document.getElementById('playerNameDisplay'); // New for nickname
+        const playerGoldSpan = document.getElementById('playerGold');
+        const heroesOwnedSpan = document.getElementById('heroesOwned');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+        const summonBasicButton = document.getElementById('summonBasicButton');
+        const summonAdvancedButton = document.getElementById('summonAdvancedButton');
+        const summonLegendaryButton = document.getElementById('summonLegendaryButton');
+        const heroInventoryDiv = document.getElementById('heroInventory');
+        const lastSummonedHeroDiv = document.getElementById('lastSummonedHero');
+        const summonedHeroImage = document.getElementById('summonedHeroImage');
+        const summonedHeroName = document.getElementById('summonedHeroName');
+        const summonedHeroRarity = document.getElementById('summonedHeroRarity');
+        const summonedHeroStats = document.getElementById('summonedHeroStats');
+        const heroSummonModal = document.getElementById('heroSummonModal');
+        const modalHeroImage = document.getElementById('modalHeroImage');
+        const modalHeroName = document.getElementById('modalHeroName');
+        const modalHeroRarity = document.getElementById('modalHeroRarity');
+        const modalHeroStats = document.getElementById('modalHeroStats');
+        const teamInventoryDiv = document.getElementById('teamInventory');
+        const teamPowerSpan = document.getElementById('teamPower');
+        const teamCountSpan = document.getElementById('teamCount');
+        const collectTeamGoldButton = document.getElementById('collectTeamGoldButton');
+        const goldToCollectSpan = document.getElementById('goldToCollect');
+
+        // New UI Elements for Authentication
+        const authSection = document.getElementById('authSection');
+        const gameContent = document.getElementById('gameContent');
+        const emailInput = document.getElementById('emailInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const signUpEmailButton = document.getElementById('signUpEmailButton');
+        const signInEmailButton = document.getElementById('signInEmailButton');
+        const signOutButton = document.getElementById('signOutButton');
+
+        // UI Elements for Gemini Lore Generation
+        const generateLoreButtonLast = document.getElementById('generateLoreButtonLast');
+        const loreDisplayLast = document.getElementById('loreDisplayLast');
+        const loreLoadingLast = document.getElementById('loreLoadingLast');
+        const generateLoreButtonModal = document.getElementById('generateLoreButtonModal');
+        const loreDisplayModal = document.getElementById('loreDisplayModal');
+        const loreLoadingModal = document.getElementById('loreLoadingModal');
+
+        // UI Elements for Game Mode Navigation
+        const gameModeTabs = document.querySelectorAll('.tab-button');
+        const homeModeSection = document.getElementById('homeMode');
+        const arenaModeSection = document.getElementById('arenaMode');
+        const dungeonModeSection = document.getElementById('dungeonMode');
+        const storyModeSection = document.getElementById('storyMode');
+        const forgeModeSection = document.getElementById('forgeMode'); // New Forge mode section
+        const dailyQuestsModeSection = document.getElementById('dailyQuestsMode'); // New Daily Quests mode section
+        const leaderboardModeSection = document.getElementById('leaderboardMode'); // New Leaderboard Mode Section
+
+        // UI Elements for Arena
+        const arenaWinsSpan = document.getElementById('arenaWins');
+        const arenaLossesSpan = document.getElementById('arenaLosses');
+        const arenaPointsSpan = document.getElementById('arenaPoints');
+        const opponentDisplay = document.getElementById('opponentDisplay');
+        const findOpponentButton = document.getElementById('findOpponentButton');
+        const startArenaBattleButton = document.getElementById('startArenaBattleButton');
+        const arenaResultDisplay = document.getElementById('arenaResultDisplay');
+        const buyGoldButtons = document.querySelectorAll('.button-buy-gold');
+        const arenaSearchCostSpan = document.getElementById('arenaSearchCost'); // New for arena search cost
+        let currentOpponent = null;
+
+        // UI Elements for Dungeon
+        const dungeonCurrentFloorSpan = document.getElementById('dungeonCurrentFloor');
+        const dungeonAccumulatedGoldSpan = document.getElementById('dungeonAccumulatedGold');
+        const dungeonHeroHealthDisplay = document.getElementById('dungeonHeroHealthDisplay');
+        const dungeonEnemyPowerDisplay = document.getElementById('dungeonEnemyPowerDisplay');
+        const dungeonEnemyDescription = document.getElementById('dungeonEnemyDescription');
+        const dungeonEnemyDescriptionLoading = document.getElementById('dungeonEnemyDescriptionLoading');
+        const generateEnemyDescriptionButton = document.getElementById('generateEnemyDescriptionButton');
+        const enterDungeonButton = document.getElementById('enterDungeonButton');
+        const fightDungeonButton = document.getElementById('fightDungeonButton');
+        const healDungeonButton = document.getElementById('healDungeonButton');
+        const retreatDungeonButton = document.getElementById('retreatDungeonButton');
+        const fightButtonFloorSpan = document.getElementById('fightButtonFloor');
+
+        // UI Elements for Story Quests
+        const storyCurrentChapterSpan = document.getElementById('storyCurrentChapter');
+        const storyNextQuestNameSpan = document.getElementById('storyNextQuestName');
+        const storyQuestDescriptionSpan = document.getElementById('storyQuestDescription');
+        const storyQuestRequiredPowerSpan = document.getElementById('storyQuestRequiredPower');
+        const startStoryQuestButton = document.getElementById('startStoryQuestButton');
+        const storyQuestRewardsDiv = document.getElementById('storyQuestRewards');
+        const completedStoryQuestsList = document.getElementById('completedStoryQuests');
+        const storyNarrativeDisplay = document.getElementById('storyNarrativeDisplay');
+        const storyNarrativeLoading = document.getElementById('storyNarrativeLoading');
+
+        // UI Elements for Forge Mode
+        const forgeHeroSelect = document.getElementById('forgeHeroSelect');
+        const selectedForgeHeroDisplay = document.getElementById('selectedForgeHeroDisplay');
+        const forgeHeroImage = document.getElementById('forgeHeroImage');
+        const forgeHeroName = document.getElementById('forgeHeroName');
+        const forgeHeroRarity = document.getElementById('forgeHeroRarity');
+        const forgeHeroCurrentStats = document.getElementById('forgeHeroCurrentStats');
+        const forgeHeroUpgradeLevel = document.getElementById('forgeHeroUpgradeLevel');
+        const forgeHeroNextStats = document.getElementById('forgeHeroNextStats');
+        const forgeCost = document.getElementById('forgeCost');
+        const upgradeHeroButton = document.getElementById('upgradeHeroButton');
+        let selectedHeroForForge = null;
+
+        // UI Elements for Daily Quests Mode
+        const dailyQuestsListDiv = document.getElementById('dailyQuestsList');
+        const dailyQuestResetTimerSpan = document.getElementById('dailyQuestResetTimer');
+
+        // UI Elements for Leaderboard Mode
+        const leaderboardList = document.getElementById('leaderboardList'); // New for leaderboard
+
+        // Nickname Modal Elements
+        const nicknameModal = document.getElementById('nicknameModal');
+        const nicknameInput = document.getElementById('nicknameInput');
+        const saveNicknameButton = document.getElementById('saveNicknameButton');
+
+
+        /**
+         * Initializes Firebase and sets up authentication.
+         * Then loads player data or initializes new data.
+         */
+        async function initializeFirebaseAndGame() {
+            try {
+                // Initialize Firebase app using the provided firebaseConfig
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                analytics = getAnalytics(app); // Initialisation de Google Analytics
+
+                // Listen for authentication state changes
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        // User is signed in.
+                        userId = user.uid;
+                        console.log("Firebase Auth User ID:", userId);
+                        // Display email/name if available. Player name will be loaded from data.
+                        userIdDisplay.textContent = user.email || userId;
+                        // Hide login UI, show game UI
+                        authSection.classList.add('hidden');
+                        gameContent.classList.remove('hidden');
+                        startListeningForPlayerData();
+                        startListeningForLeaderboard(); // Start listening for leaderboard updates
+                        startGoldGeneration(); // Start gold generation once user is authenticated
+                        updateDungeonUI(); // Initial update for dungeon
+                        updateArenaUI(); // Initial update for arena
+                        updateStoryUI(); // Initial update for story
+                        updateForgeUI(); // Initial update for forge
+                        checkAndResetDailyQuests(); // Check and reset daily quests
+                        startDailyQuestTimer(); // Start daily quest timer
+                        checkAndResetArenaSearches(); // Check and reset arena searches
+                        startArenaSearchTimer(); // Start arena search reset timer
+                        updateDailyQuestsUI(); // Initial update for daily quests
+                        switchMode(currentMode); // Ensure the correct mode is shown on login
+                    } else {
+                        // User is signed out.
+                        userId = null; // No user logged in
+                        console.log("No user signed in. Displaying authentication options.");
+                        userIdDisplay.textContent = "Non connecté";
+                        playerName = "Invité"; // Reset player name
+                        // Show login UI, hide game UI
+                        authSection.classList.remove('hidden');
+                        gameContent.classList.add('hidden');
+                        // Clear existing player data and stop game loops if user logs out
+                        playerGold = 0;
+                        playerHeroes = [];
+                        teamHeroIds = [];
+                        goldToCollect = 0;
+                        playerArenaStats = { wins: 0, losses: 0, points: 0, dailySearches: 0, lastSearchReset: 0 };
+                        playerDungeonState = { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
+                        playerStoryState = { currentChapter: 1, completedQuestIds: [] }; // Reset story state
+                        playerDailyQuests = { lastReset: 0, quests: {} }; // Reset daily quests state
+
+                        if (unsubscribeFromPlayerData) {
+                            unsubscribeFromPlayerData();
+                            unsubscribeFromPlayerData = null;
+                        }
+                        if (unsubscribeFromLeaderboard) {
+                            unsubscribeFromLeaderboard();
+                            unsubscribeFromLeaderboard = null;
+                        }
+                        if (goldGenerationInterval) {
+                            clearInterval(goldGenerationInterval);
+                            goldGenerationInterval = null;
+                        }
+                        if (dailyQuestTimerInterval) {
+                            clearInterval(dailyQuestTimerInterval);
+                            dailyQuestTimerInterval = null;
+                        }
+                        if (arenaSearchResetInterval) {
+                            clearInterval(arenaSearchResetInterval);
+                            arenaSearchResetInterval = null;
+                        }
+                        updateUI(); // Update UI to reflect logged-out state
+                    }
+                });
+            } catch (error) {
+                console.error("Erreur d'initialisation de Firebase ou d'authentification:", error);
+                userIdDisplay.textContent = `Erreur Firebase. Veuillez vérifier la console.`;
+                // Ensure UI hides game and shows auth if init fails
+                authSection.classList.remove('hidden');
+                gameContent.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Starts real-time listening for player data using onSnapshot.
+         */
+        function startListeningForPlayerData() {
+            // Unsubscribe from previous listener if exists
+            if (unsubscribeFromPlayerData) {
+                unsubscribeFromPlayerData();
+            }
+
+            // The __app_id is provided by the Canvas environment for Firestore pathing.
+            // For external deployments (like Firebase Hosting), we'll use the projectId from firebaseConfig.
+            const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
+            // Data is stored under the user's specific UID
+            const playerDocRef = doc(db, `artifacts/${appId}/users/${userId}/gacha_rpg_data/player_data`);
+
+            unsubscribeFromPlayerData = onSnapshot(playerDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    playerName = data.playerName || ""; // Load player name
+                    playerGold = data.gold || 0; // Load existing gold, default to 0 if not present
+
+                    // NEW LOGIC: Grant starting gold if it's 0 and there are no heroes (suggests fresh or empty account)
+                    // This prevents giving gold if user just spent it down to 0 but has heroes.
+                    // Also check for new player who might have some initial gold but no heroes.
+                    if (playerGold === 0 && (!data.heroes || JSON.parse(data.heroes).length === 0)) {
+                        playerGold = 5000;
+                        console.log("Initialisation: 5000 Or accordés à un nouveau profil ou profil vide.");
+                        savePlayerData(); // Save this initial grant
+                    }
+
+
+                    try {
+                        // Ensure heroes array is parsed if it was stringified, and initialize upgradeLevel
+                        playerHeroes = data.heroes ? JSON.parse(data.heroes) : [];
+                        playerHeroes.forEach(hero => {
+                            if (typeof hero.upgradeLevel === 'undefined') {
+                                hero.upgradeLevel = 0; // Initialize existing heroes with upgrade level
+                            }
+                        });
+                        console.log("Héros chargés depuis Firestore:", playerHeroes.length, "héros.");
+                    } catch (e) {
+                        console.error("Erreur de parsing JSON pour les héros. Réinitialisation de l'inventaire.", e);
+                        playerHeroes = []; // Reset if parsing fails
+                    }
+                    teamHeroIds = data.teamHeroIds || [];
+                    goldToCollect = data.goldToCollect || 0;
+
+                    // Load new game mode data
+                    playerArenaStats = data.arenaStats || { wins: 0, losses: 0, points: 0, dailySearches: 0, lastSearchReset: 0 };
+                    playerDungeonState = data.dungeonState || { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
+                    playerStoryState = data.storyState || { currentChapter: 1, completedQuestIds: [] }; // Load story state
+                    playerDailyQuests = data.dailyQuests || { lastReset: 0, quests: {} }; // Load daily quests state
+
+                    // Ensure daily quests structure is consistent after load
+                    if (!playerDailyQuests.quests || Object.keys(playerDailyQuests.quests).length === 0) {
+                        initializeDailyQuests();
+                    } else {
+                        // Ensure all quests from definition exist in player data
+                        for (const key in DAILY_QUESTS_DEFINITIONS) {
+                            if (!playerDailyQuests.quests[key]) {
+                                playerDailyQuests.quests[key] = { progress: 0, completed: false, claimed: false };
+                            }
+                        }
+                    }
+
+                    console.log("Données du joueur chargées ou mises à jour:", { gold: playerGold, heroesCount: playerHeroes.length, teamCount: teamHeroIds.length, goldToCollect: goldToCollect, arena: playerArenaStats, dungeon: playerDungeonState, story: playerStoryState, dailyQuests: playerDailyQuests });
+
+                    // Prompt for nickname if not set
+                    if (!playerName) {
+                        showNicknameModal();
+                    }
+
+                } else {
+                    // Document does not exist, initialize player data only if no data was found
+                    console.log("Aucune donnée de joueur trouvée. Initialisation des données.");
+                    playerName = "Joueur" + Math.floor(Math.random() * 1000); // Default random name for new players
+                    playerGold = 5000; // Starting gold for easier testing on new profiles
+                    playerHeroes = [];
+                    teamHeroIds = [];
+                    goldToCollect = 0;
+                    playerArenaStats = { wins: 0, losses: 0, points: 0, dailySearches: 0, lastSearchReset: Date.now() };
+                    playerDungeonState = { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
+                    playerStoryState = { currentChapter: 1, completedQuestIds: [] }; // Initialize story state
+                    initializeDailyQuests(); // Initialize daily quests for a new player
+                    // Save initial data to Firestore
+                    savePlayerData(true); // Force save on first load
+                    showNicknameModal(); // Prompt for nickname on first load
+                }
+                updateUI(); // Always update UI after data changes
+                updateArenaUI(); // Update UI for arena
+                updateDungeonUI(); // Update UI for dungeon
+                updateStoryUI(); // Update UI for story
+                updateForgeUI(); // Update UI for forge (dropdown options)
+                updateDailyQuestsUI(); // Update UI for daily quests
+                updateArenaSearchCostUI(); // Update search cost UI
+            }, (error) => {
+                console.error("Erreur lors de l'écoute des données du joueur:", error);
+                showMessageBox("Erreur de chargement des données", "Impossible de charger vos données de jeu. Veuillez réessayer ou contacter le support.");
+            });
+        }
+
+        /**
+         * Starts real-time listening for leaderboard data using onSnapshot.
+         */
+        function startListeningForLeaderboard() {
+            // Unsubscribe from previous listener if exists
+            if (unsubscribeFromLeaderboard) {
+                unsubscribeFromLeaderboard();
+            }
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
+            const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/leaderboard`);
+            const q = query(leaderboardCollectionRef, orderBy("arenaPoints", "desc"), limit(10));
+
+            unsubscribeFromLeaderboard = onSnapshot(q, (snapshot) => {
+                const topPlayers = [];
+                snapshot.forEach(doc => {
+                    topPlayers.push(doc.data());
+                });
+                renderLeaderboard(topPlayers);
+            }, (error) => {
+                console.error("Erreur lors de l'écoute du classement:", error);
+                leaderboardList.innerHTML = `<li class="py-2 text-red-500">Impossible de charger le classement.</li>`;
+            });
+        }
+
+
+        /**
+         * Saves player data to Firestore.
+         * @param {boolean} forceSave - If true, saves even if data hasn't changed (e.g., for initial setup).
+         */
+        async function savePlayerData(forceSave = false) {
+            // Only save if userId is properly set and Firebase is initialized
+            if (!userId || !db) {
+                console.warn("Impossible de sauvegarder les données: Firebase non initialisé ou ID utilisateur manquant.");
+                return;
+            }
+
+            // Stringify heroes array for Firestore storage, and new game mode data
+            const heroesToSave = JSON.stringify(playerHeroes);
+            const teamIdsToSave = teamHeroIds; // Already an array of strings
+            const arenaStatsToSave = playerArenaStats;
+            const dungeonStateToSave = playerDungeonState;
+            const storyStateToSave = playerStoryState; // Save story state
+            const dailyQuestsToSave = playerDailyQuests; // Save daily quests state
+
+
+            // Construct the document path using __app_id or projectId
+            const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
+            const playerDocRef = doc(db, `artifacts/${appId}/users/${userId}/gacha_rpg_data/player_data`);
+
+            try {
+                await setDoc(playerDocRef, {
+                    playerName: playerName, // Save player name
+                    gold: playerGold,
+                    heroes: heroesToSave, // Store as string
+                    teamHeroIds: teamIdsToSave,
+                    goldToCollect: goldToCollect,
+                    arenaStats: arenaStatsToSave,
+                    dungeonState: dungeonStateToSave,
+                    storyState: storyStateToSave, // Save story state
+                    dailyQuests: dailyQuestsToSave // Save daily quests state
+                });
+                console.log("Données du joueur sauvegardées avec succès.");
+                // Update leaderboard after player data is saved
+                updateLeaderboardEntry();
+            } catch (error) {
+                console.error("Erreur lors de la sauvegarde des données du joueur:", error);
+                showMessageBox("Erreur de sauvegarde", "Impossible de sauvegarder vos données de jeu. Veuillez réessayer.");
+            }
+        }
+
+        /**
+         * Updates or creates the user's entry in the public leaderboard collection.
+         */
+        async function updateLeaderboardEntry() {
+            if (!userId || !db || !playerName) {
+                return; // Cannot update leaderboard if not logged in or no player name
+            }
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
+            const leaderboardDocRef = doc(db, `artifacts/${appId}/public/leaderboard/${userId}`);
+
+            try {
+                await setDoc(leaderboardDocRef, {
+                    userId: userId,
+                    playerName: playerName,
+                    arenaPoints: playerArenaStats.points,
+                    lastUpdated: Date.now()
+                }, { merge: true }); // Use merge to only update specified fields
+                console.log("Entrée du classement mise à jour.");
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour du classement:", error);
+            }
+        }
+
+
+        /**
+         * Handles Email/Password Sign-Up.
+         */
+        async function signUpWithEmail() {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            if (!email || !password) {
+                showMessageBox("Champs manquants", "Veuillez entrer un email et un mot de passe pour vous inscrire.");
+                return;
+            }
+            // Basic password strength check (Firebase requires at least 6 characters)
+            if (password.length < 6) {
+                showMessageBox("Mot de passe faible", "Le mot de passe doit contenir au moins 6 caractères.");
+                return;
+            }
+
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                showMessageBox("Inscription réussie", "Votre compte a été créé ! Vous êtes maintenant connecté.");
+            } catch (error) {
+                console.error("Erreur d'inscription Email/Mdp:", error);
+                // Check if the email is already in use
+                if (error.code === 'auth/email-already-in-use') {
+                    showMessageBox(
+                        "Email déjà utilisé",
+                        "Cet email est déjà associé à un compte. Veuillez vous connecter ou utiliser un autre email."
+                    );
+                } else {
+                    showMessageBox("Erreur d'inscription", "Impossible de créer le compte. " + error.message);
+                }
+            }
+        }
+
+        /**
+         * Handles Email/Password Sign-In.
+         */
+        async function signInWithEmail() {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            if (!email || !password) {
+                showMessageBox("Champs manquants", "Veuillez entrer votre email et votre mot de passe pour vous connecter.");
+                return;
+            }
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showMessageBox("Connexion réussie", "Vous êtes connecté avec votre email !");
+            } catch (error) {
+                console.error("Erreur de connexion Email/Mdp:", error);
+                showMessageBox("Erreur de connexion", "Impossible de se connecter. " + error.message);
+            }
+        }
+
+        /**
+         * Handles user sign-out.
+         */
+        async function signOutUser() {
+            try {
+                await signOut(auth);
+                showMessageBox("Déconnexion réussie", "Vous avez été déconnecté.");
+            } catch (error) {
+                console.error("Erreur de déconnexion:", error);
+                showMessageBox("Erreur de déconnexion", "Impossible de se déconnecter. " + error.message);
+            }
+        }
+
+        /**
+         * Shows the nickname input modal.
+         */
+        function showNicknameModal() {
+            nicknameModal.classList.add('show');
+            nicknameInput.value = playerName; // Pre-fill with current name if any
+            nicknameInput.focus();
+        }
+
+        /**
+         * Saves the chosen nickname.
+         */
+        async function saveNickname() {
+            const newName = nicknameInput.value.trim();
+            if (!newName) {
+                showMessageBox("Pseudo vide", "Veuillez entrer un pseudo valide.");
+                return;
+            }
+            if (newName.length > 20) {
+                showMessageBox("Pseudo trop long", "Le pseudo ne peut pas dépasser 20 caractères.");
+                return;
+            }
+
+            playerName = newName;
+            await savePlayerData(); // Save the new nickname
+            nicknameModal.classList.remove('show');
+            updateUI(); // Update UI to display the new name
+            showMessageBox("Pseudo enregistré", `Votre pseudo a été mis à jour en "${playerName}".`);
+        }
+
+
+        /**
+         * Calculates the total attack power of the current team.
+         * @returns {number} The total attack power.
+         */
+        function calculateTeamPower(heroIdsList = teamHeroIds) {
+            let totalAttack = 0;
+            heroIdsList.forEach(heroId => {
+                const hero = playerHeroes.find(h => h.id === heroId);
+                if (hero) {
+                    totalAttack += hero.stats.atk;
+                }
+            });
+            return totalAttack;
+        }
+
+        /**
+         * Checks if a hero is busy (e.g., in dungeon).
+         * @param {string} heroId - The ID of the hero to check.
+         * @returns {boolean} True if the hero is busy, false otherwise.
+         */
+        function isHeroBusy(heroId) {
+            if (playerDungeonState.active && playerDungeonState.dungeonTeamHeroIds.includes(heroId)) return true;
+            return false;
+        }
+
+
+        /**
+         * Starts the continuous gold generation by the team.
+         */
+        function startGoldGeneration() {
+            if (goldGenerationInterval) {
+                clearInterval(goldGenerationInterval); // Clear any existing interval
+            }
+            goldGenerationInterval = setInterval(() => {
+                const teamPower = calculateTeamPower();
+                if (teamPower > 0) {
+                    goldToCollect += teamPower * GOLD_GEN_FACTOR;
+                    goldToCollectSpan.textContent = goldToCollect; // Update immediately
+                    // No need to save to Firestore on every tick, save on collection
+                }
+            }, GOLD_GEN_INTERVAL_MS);
+        }
+
+        /**
+         * Handles the collection of gold generated by the team.
+         */
+        function collectTeamGold() {
+            if (goldToCollect > 0) {
+                playerGold += goldToCollect;
+                goldToCollect = 0;
+                savePlayerData();
+                updateUI();
+            } else {
+                showMessageBox("Pas d'or à collecter", "Votre équipe n'a pas encore généré d'or. Ajoutez des héros à votre équipe !");
+            }
+        }
+
+        /**
+         * Updates the UI elements based on current game state.
+         */
+        function updateUI() {
+            playerNameDisplay.textContent = playerName; // Display player name
+            playerGoldSpan.textContent = playerGold;
+            heroesOwnedSpan.textContent = playerHeroes.length;
+            const teamPower = calculateTeamPower();
+            teamPowerSpan.textContent = teamPower;
+            teamCountSpan.textContent = teamHeroIds.length;
+            goldToCollectSpan.textContent = goldToCollect;
+            renderHeroInventory();
+            renderTeamInventory();
+        }
+
+        /**
+         * Renders the player's hero inventory (heroes NOT in team) in the UI.
+         */
+        function renderHeroInventory() {
+            heroInventoryDiv.innerHTML = ''; // Clear current inventory display
+
+            // Filter heroes to show only those NOT in the team
+            const heroesNotInTeam = playerHeroes.filter(hero => !teamHeroIds.includes(hero.id) && !isHeroBusy(hero.id));
+            console.log('Heroes not in team (for inventory display):', heroesNotInTeam); // Debugging log
+
+            if (heroesNotInTeam.length === 0) {
+                heroInventoryDiv.innerHTML = `
+                    <div class="card col-span-full">
+                        <p class="text-sm font-semibold text-gray-700">Aucun Héros (hors équipe)</p>
+                        <p class="text-xs text-gray-500">Invoquez-en ou retirez-les de l'équipe !</p>
+                    </div>
+                `;
+                return;
+            }
+
+            heroesNotInTeam.forEach(hero => {
+                const heroCard = document.createElement('div');
+                heroCard.classList.add('card', 'p-3', 'no-hover');
+                const isBusyFlag = isHeroBusy(hero.id); // Check if busy in other modes
+                heroCard.innerHTML = `
+                    <img class="w-16 h-16 rounded-full object-cover mb-2 border-2 border-gray-300" src="${hero.imageUrl}" onerror="this.onerror=null; this.src='https://placehold.co/80x80/A0AEC0/FFFFFF?text=?';" alt="${hero.name}">
+                    <p class="text-md font-bold text-gray-800">${hero.name}</p>
+                    <p class="text-sm font-semibold rarity-${hero.rarity.toLowerCase()}">${hero.rarity}</p>
+                    <p class="text-xs text-gray-600">ATK: ${hero.stats.atk} DEF: ${hero.stats.def} HP: ${hero.stats.hp} (Niv.Amél: ${hero.upgradeLevel || 0})</p>
+                    <button class="button-primary mt-2 text-xs w-full ${isBusyFlag ? 'opacity-50 cursor-not-allowed' : ''}" data-hero-id="${hero.id}" data-action="add" ${isBusyFlag ? 'disabled' : ''}>
+                        ${isBusyFlag ? 'Occupé' : 'Ajouter à l\'équipe'}
+                    </button>
+                `;
+                // Add event listener to the button, not the card itself
+                if (!isBusyFlag) {
+                    heroCard.querySelector('button').addEventListener('click', (event) => {
+                        const heroId = event.target.dataset.heroId;
+                        const selectedHero = playerHeroes.find(h => h.id === heroId);
+                        if (selectedHero) {
+                            toggleHeroInTeam(selectedHero);
+                        }
+                    });
+                }
+                heroInventoryDiv.appendChild(heroCard);
+            });
+        }
+
+        /**
+         * Renders the heroes currently in the team.
+         */
+        function renderTeamInventory() {
+            teamInventoryDiv.innerHTML = ''; // Clear current team display
+
+            // Filter heroes to show only those IN the team
+            const heroesInTeam = playerHeroes.filter(hero => teamHeroIds.includes(hero.id));
+            console.log('Heroes in team (for team display):', heroesInTeam); // Debugging log
+
+            if (heroesInTeam.length === 0) {
+                teamInventoryDiv.innerHTML = `
+                    <div class="card col-span-full">
+                        <p class="text-sm font-semibold text-gray-700">Aucun Héros dans l'équipe</p>
+                        <p class="text-xs text-gray-500">Ajoutez-en depuis l'inventaire !</p>
+                    </div>
+                `;
+                return;
+            }
+
+            heroesInTeam.forEach(hero => {
+                const heroCard = document.createElement('div');
+                heroCard.classList.add('card', 'p-3', 'no-hover');
+                // Only disable if busy in dungeon
+                const isBusyInOtherModes = isHeroBusy(hero.id);
+                heroCard.innerHTML = `
+                        <img class="w-16 h-16 rounded-full object-cover mb-2 border-2 border-indigo-500" src="${hero.imageUrl}" onerror="this.onerror=null; this.src='https://placehold.co/80x80/A0AEC0/FFFFFF?text=?';" alt="${hero.name}">
+                        <p class="text-md font-bold text-gray-800">${hero.name}</p>
+                        <p class="text-sm font-semibold rarity-${hero.rarity.toLowerCase()}">${hero.rarity}</p>
+                        <p class="text-xs text-gray-600">ATK: ${hero.stats.atk} DEF: ${hero.stats.def} HP: ${hero.stats.hp} (Niv.Amél: ${hero.upgradeLevel || 0})</p>
+                        <button class="button-secondary mt-2 text-xs w-full ${isBusyInOtherModes ? 'opacity-50 cursor-not-allowed' : ''}" data-hero-id="${hero.id}" data-action="remove" ${isBusyInOtherModes ? 'disabled' : ''}>
+                            ${isBusyInOtherModes ? 'Occupé' : 'Retirer'}
+                        </button>
+                    `;
+                if (!isBusyInOtherModes) { // Attach listener only if not busy in other modes
+                    heroCard.querySelector('button').addEventListener('click', (event) => {
+                        const idToRemove = event.target.dataset.heroId;
+                        const selectedHero = playerHeroes.find(h => h.id === idToRemove);
+                        if (selectedHero) {
+                            toggleHeroInTeam(selectedHero);
+                        }
+                    });
+                }
+                teamInventoryDiv.appendChild(heroCard);
+            });
+        }
+
+
+        /**
+         * Adds or removes a hero from the active team.
+         * @param {object} hero - The hero object to toggle.
+         */
+        async function toggleHeroInTeam(hero) {
+            // Prevent adding/removing heroes that are busy elsewhere
+            if (isHeroBusy(hero.id) && !teamHeroIds.includes(hero.id)) {
+                showMessageBox("Héros occupé", `${hero.name} est actuellement occupé dans une autre activité (donjon) et ne peut pas être ajouté à l'équipe.`);
+                return;
+            }
+
+            const index = teamHeroIds.indexOf(hero.id);
+
+            if (index > -1) {
+                // Hero is already in team, remove them
+                teamHeroIds.splice(index, 1);
+                showMessageBox("Héros retiré !", `${hero.name} a été retiré de votre équipe.`);
+            } else {
+                // Hero is not in team, add them if space is available
+                if (teamHeroIds.length < TEAM_MAX_SIZE) {
+                    teamHeroIds.push(hero.id);
+                    showMessageBox("Héros ajouté !", `${hero.name} a été ajouté à votre équipe.`);
+                } else {
+                    showMessageBox("Équipe complète !", "Votre équipe a déjà le nombre maximum de héros (6). Retirez-en un pour ajouter un nouveau héros.");
+                }
+            }
+            await savePlayerData();
+            updateUI();
+        }
+
+        /**
+         * Randomly selects a rarity based on defined probabilities for a given gacha type.
+         * @param {string} gachaTypeKey - The key of the gacha type (e.g., 'basic', 'advanced').
+         * @returns {string} The selected rarity.
+         */
+        function getRandomRarity(gachaTypeKey) {
+            const probabilities = GACHA_TYPES[gachaTypeKey].probabilities;
+            let rand = Math.random();
+            let cumulativeProbability = 0;
+            for (const rarity in probabilities) {
+                cumulativeProbability += probabilities[rarity];
+                if (rand < cumulativeProbability) {
+                    return rarity;
+                }
+            }
+            return "Common"; // Fallback
+        }
+
+        /**
+         * Filters heroes by rarity and selects one randomly.
+         * @param {string} rarity - The desired rarity.
+         * @returns {object} The selected hero object.
+         */
+        function getRandomHeroByRarity(rarity) {
+            const heroesOfRarity = HEROES_DATA.filter(hero => hero.rarity === rarity);
+            if (heroesOfRarity.length === 0) {
+                console.warn(`Aucun héros trouvé pour la rareté: ${rarity}.`);
+                // Fallback: If no heroes of specific rarity, return a random hero from all data.
+                // This ensures the game doesn't break even if a rarity has no defined heroes.
+                const fallbackHero = HEROES_DATA[Math.floor(Math.random() * HEROES_DATA.length)];
+                // Ensure the fallback also has upgradeLevel initialized
+                return { ...fallbackHero, id: crypto.randomUUID(), upgradeLevel: 0 };
+            }
+            const randomIndex = Math.floor(Math.random() * heroesOfRarity.length);
+            // Return a new object with a unique ID and initialized upgradeLevel
+            return { ...heroesOfRarity[randomIndex], id: crypto.randomUUID(), upgradeLevel: 0 };
+        }
+
+        /**
+         * Handles the hero summoning action for a specific gacha type.
+         * @param {string} gachaTypeKey - The key of the gacha type (e.g., 'basic', 'advanced').
+         */
+        async function summonHero(gachaTypeKey) {
+            // Check if user is logged in before summoning
+            if (!userId) {
+                showMessageBox("Non connecté", "Veuillez vous connecter pour invoquer des héros !");
+                return;
+            }
+
+            const gachaInfo = GACHA_TYPES[gachaTypeKey];
+            const cost = gachaInfo.cost;
+            
+            if (playerGold < cost) {
+                showMessageBox("Pas assez d'Or !", `Vous avez besoin de ${cost} Or pour cette invocation. Gagnez-en avec votre équipe ou dans les quêtes !`);
+                return;
+            }
+
+            playerGold -= cost;
+            const chosenRarity = getRandomRarity(gachaTypeKey);
+            const newHero = getRandomHeroByRarity(chosenRarity);
+            playerHeroes.push(newHero);
+            console.log("Héros ajouté à playerHeroes:", newHero, "Total héros:", playerHeroes.length);
+
+            // Store the newly summoned hero for lore generation
+            currentHeroForLore = newHero;
+
+            await savePlayerData(); // Ensure data is saved before UI updates
+            console.log("playerHeroes après sauvegarde:", playerHeroes);
+
+            // Update daily quest for summoning
+            updateDailyQuestProgress('summonHero', 1);
+
+            // Show last summoned hero display
+            lastSummonedHeroDiv.classList.remove('hidden');
+            lastSummonedHeroDiv.classList.add('flex'); // Show as flex
+            lastSummonedHeroDiv.classList.add('summoned-hero-display'); // Add animation class
+
+            // Update details
+            summonedHeroImage.src = newHero.imageUrl;
+            summonedHeroImage.onerror = () => { summonedHeroImage.src = 'https://placehold.co/100x100/A0AEC0/FFFFFF?text=?'; };
+            summonedHeroName.textContent = newHero.name;
+            summonedHeroRarity.textContent = newHero.rarity;
+            summonedHeroRarity.className = `text-lg font-semibold rarity-${newHero.rarity.toLowerCase()}`;
+            summonedHeroStats.textContent = `ATK: ${newHero.stats.atk} DEF: ${newHero.stats.def} HP: ${newHero.stats.hp} (Niv.Amél: ${newHero.upgradeLevel || 0})`;
+            
+            // Clear previous lore
+            loreDisplayLast.textContent = '';
+            loreDisplayModal.textContent = '';
+
+
+            // Remove animation class after it finishes
+            setTimeout(() => {
+                lastSummonedHeroDiv.classList.remove('summoned-hero-display');
+            }, 700); // Match animation duration
+
+            showHeroDetailsModal(newHero); // Also show in a modal
+            updateUI();
+        }
+
+        /**
+         * Displays the hero details modal.
+         * @param {object} hero - The hero object to display.
+         */
+        function showHeroDetailsModal(hero) {
+            modalHeroImage.src = hero.imageUrl;
+            modalHeroImage.onerror = () => { modalHeroImage.src = 'https://placehold.co/150x150/A0AEC0/FFFFFF?text=?'; };
+            modalHeroName.textContent = hero.name;
+            modalHeroRarity.textContent = hero.rarity;
+            modalHeroRarity.className = `text-xl font-semibold rarity-${hero.rarity.toLowerCase()}`;
+            modalHeroStats.textContent = `ATK: ${hero.stats.atk} DEF: ${hero.stats.def} HP: ${hero.stats.hp} (Niv.Amél: ${hero.upgradeLevel || 0})`;
+            
+            // Set the current hero for lore generation in the modal
+            currentHeroForLore = hero;
+            loreDisplayModal.textContent = ''; // Clear previous lore
+            loreLoadingModal.classList.add('hidden'); // Hide loading spinner
+
+            heroSummonModal.classList.add('show');
+        }
+
+        /**
+         * Closes the hero details modal.
+         */
+        window.closeModal = function() {
+            heroSummonModal.classList.remove('show');
+            currentHeroForLore = null; // Clear hero data when modal closes
+        };
+
+        /**
+         * Generates lore for the current hero using Gemini API.
+         * @param {object} hero - The hero object for which to generate lore.
+         * @param {HTMLElement} displayElement - The DOM element to display the lore.
+         * @param {HTMLElement} loadingElement - The DOM element for the loading spinner.
+         */
+        async function generateHeroLore(hero, displayElement, loadingElement) {
+            if (!hero) {
+                showMessageBox("Erreur", "Aucun héros sélectionné pour générer l'histoire.");
+                return;
+            }
+
+            displayElement.textContent = ''; // Clear previous lore
+            loadingElement.classList.remove('hidden'); // Show loading spinner
+
+            const prompt = `Écrivez une courte biographie ou une histoire pour un héros de jeu de rôle. Le héros s'appelle ${hero.name}, sa rareté est ${hero.rarity}, et il a ${hero.stats.atk} DEF et ${hero.stats.hp} HP. L'histoire doit être fantastique et captivante, se déroulant dans un monde médiéval-fantastique, et doit mettre en valeur son rôle, ses exploits ou ses particularités liées à sa rareté et ses statistiques. La longueur doit être d'environ 70-100 mots.`;
+            
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = "AIzaSyDsyjdlwH2HYVVfgRNAeIYjyQqeym5sqFs"; // Your API key is inserted here
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const lore = result.candidates[0].content.parts[0].text;
+                    displayElement.textContent = lore;
+                } else {
+                    displayElement.textContent = "Impossible de générer l'histoire. Veuillez réessayer.";
+                    console.error("Structure de réponse inattendue de l'API Gemini:", result);
+                }
+            } catch (error) {
+                console.error("Erreur lors de l'appel à l'API Gemini:", error);
+                displayElement.textContent = "Erreur de connexion à l'IA. Veuillez vérifier votre connexion.";
+            } finally {
+                loadingElement.classList.add('hidden'); // Hide loading spinner
+            }
+        }
+
+
+        /**
+         * Displays a custom message box instead of alert().
+         * @param {string} title - The title of the message.
+         * @param {string} message - The content of the message.
+         */
+        function showMessageBox(title, message) {
+            // Remove any existing message box to prevent multiple modals
+            const existingModal = document.getElementById('messageBoxModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Create modal elements
+            const msgModal = document.createElement('div');
+            msgModal.className = 'modal';
+            msgModal.id = 'messageBoxModal';
+
+            const msgContent = document.createElement('div');
+            msgContent.className = 'modal-content';
+
+            const closeButton = document.createElement('button');
+            closeButton.className = 'modal-close-button';
+            closeButton.innerHTML = '&times;';
+            closeButton.onclick = () => msgModal.remove();
+
+            const msgTitle = document.createElement('h2');
+            msgTitle.className = 'text-2xl font-bold text-gray-800 mb-2';
+            msgTitle.textContent = title;
+
+            const msgText = document.createElement('p');
+            msgText.className = 'text-lg text-gray-700 mb-4';
+            msgText.textContent = message;
+
+            const okButton = document.createElement('button');
+            okButton.className = 'button-primary';
+            okButton.textContent = 'OK';
+            okButton.onclick = () => msgModal.remove();
+
+            msgContent.appendChild(closeButton);
+            msgContent.appendChild(msgTitle);
+            msgContent.appendChild(msgText);
+            msgContent.appendChild(okButton);
+            msgModal.appendChild(msgContent);
+
+            document.body.appendChild(msgModal);
+            // Use a timeout to ensure CSS transitions apply
+            setTimeout(() => msgModal.classList.add('show'), 10);
+        }
+
+        /**
+         * Switches between game modes.
+         * @param {string} mode - The mode to switch to ('home', 'expeditions', 'arena', 'dungeon', 'story', 'forge', 'dailyQuests', 'leaderboard').
+         */
+        function switchMode(mode) {
+            currentMode = mode;
+            // Deactivate all sections and tab buttons
+            document.querySelectorAll('.game-mode-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Activate the selected section and its tab button
+            document.getElementById(`${mode}Mode`).classList.add('active');
+            document.querySelector(`.tab-button[data-mode="${mode}"]`).classList.add('active');
+
+            // Specific UI updates for new modes when switching
+            if (mode === 'forge') {
+                updateForgeUI();
+            } else if (mode === 'dailyQuests') {
+                updateDailyQuestsUI();
+            } else if (mode === 'leaderboard') {
+                // Leaderboard is updated via onSnapshot, so just ensure it's displayed
+                // No explicit fetch needed here, it reacts to real-time updates
+            }
+        }
+
+
+        // --- ARENA MODE LOGIC ---
+
+        /**
+         * Checks if daily arena searches need to be reset and performs reset if necessary.
+         */
+        async function checkAndResetArenaSearches() {
+            const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+            const now = Date.now();
+
+            if (now - playerArenaStats.lastSearchReset >= oneDay) {
+                console.log("Réinitialisation des recherches d'arène quotidiennes...");
+                playerArenaStats.lastSearchReset = now;
+                playerArenaStats.dailySearches = 0;
+                await savePlayerData();
+                updateArenaSearchCostUI();
+            }
+        }
+
+        /**
+         * Updates the UI for arena search cost.
+         */
+        function updateArenaSearchCostUI() {
+            if (playerArenaStats.dailySearches < ARENA_FREE_SEARCHES_PER_DAY) {
+                arenaSearchCostSpan.textContent = `Recherches gratuites restantes: ${ARENA_FREE_SEARCHES_PER_DAY - playerArenaStats.dailySearches}`;
+            } else {
+                arenaSearchCostSpan.textContent = `Coût de la prochaine recherche: ${ARENA_PAID_SEARCH_COST} Or`;
+            }
+        }
+
+        /**
+         * Starts the interval to update arena search reset timer.
+         */
+        function startArenaSearchTimer() {
+            if (arenaSearchResetInterval) {
+                clearInterval(arenaSearchResetInterval);
+            }
+            arenaSearchResetInterval = setInterval(updateArenaSearchCostUI, 1000); // Update every second
+        }
+
+
+        /**
+         * Generates a dummy opponent for arena battle.
+         */
+        async function findOpponent() {
+            if (!userId) {
+                showMessageBox("Non connecté", "Veuillez vous connecter pour combattre dans l'arène.");
+                return;
+            }
+
+            // Check and reset daily searches before attempting to find an opponent
+            await checkAndResetArenaSearches(); // Ensures counts are up-to-date
+
+            if (playerArenaStats.dailySearches < ARENA_FREE_SEARCHES_PER_DAY) {
+                playerArenaStats.dailySearches++;
+                console.log(`Recherche d'arène gratuite utilisée. Restant: ${ARENA_FREE_SEARCHES_PER_DAY - playerArenaStats.dailySearches}`);
+            } else {
+                if (playerGold < ARENA_PAID_SEARCH_COST) {
+                    showMessageBox("Pas assez d'or !", `Vous avez besoin de ${ARENA_PAID_SEARCH_COST} Or pour rechercher un adversaire.`);
+                    return;
+                }
+                playerGold -= ARENA_PAID_SEARCH_COST;
+                console.log(`Recherche d'arène payée. Or restant: ${playerGold}`);
+            }
+            
+            // Proceed with opponent generation
+            const opponentNames = ["Ombre", "Fléau", "Titan", "Spectre", "Gardien", "Faucheur", "Berserker"];
+            const randomName = opponentNames[Math.floor(Math.random() * opponentNames.length)];
+            const playerPower = calculateTeamPower();
+
+            // Generate opponent power relative to player's power
+            const opponentPower = Math.floor(playerPower * (0.8 + Math.random() * 0.4)); // +/- 20% of player power
+
+            currentOpponent = {
+                name: `Adversaire: ${randomName}`,
+                power: opponentPower
+            };
+            opponentDisplay.textContent = `${currentOpponent.name} (Puissance: ${currentOpponent.power} ATK)`;
+            startArenaBattleButton.classList.remove('hidden');
+            arenaResultDisplay.textContent = '';
+
+            await savePlayerData(); // Save the updated daily searches/gold
+            updateArenaSearchCostUI(); // Update UI after change
+            updateUI(); // To refresh gold display
+        }
+
+        /**
+         * Simulates an arena battle.
+         */
+        async function startArenaBattle() {
+            if (!currentOpponent) {
+                showMessageBox("Aucun adversaire", "Veuillez rechercher un adversaire d'abord.");
+                return;
+            }
+            if (teamHeroIds.length === 0) {
+                showMessageBox("Équipe vide", "Veuillez ajouter des héros à votre équipe principale pour combattre dans l'arène.");
+                return;
+            }
+
+            const playerPower = calculateTeamPower();
+            const opponentPower = currentOpponent.power;
+
+            // Simple combat simulation: player wins if their power is significantly higher
+            // or if there's a lucky roll. Add some randomness.
+            let result;
+            const randomFactor = Math.random() * 0.2 - 0.1; // -0.1 to +0.1
+            const effectivePlayerPower = playerPower * (1 + randomFactor);
+            const effectiveOpponentPower = opponentPower * (1 + randomFactor);
+
+            if (effectivePlayerPower > effectiveOpponentPower) {
+                playerArenaStats.wins++;
+                playerArenaStats.points += 50; // Points for winning
+                result = "Victoire !";
+                updateDailyQuestProgress('arenaWin', 1); // Update daily quest for arena win
+            } else {
+                playerArenaStats.losses++;
+                playerArenaStats.points = Math.max(0, playerArenaStats.points - 20); // Lose some points on defeat
+                result = "Défaite...";
+            }
+
+            arenaResultDisplay.textContent = `Résultat: ${result}`;
+            currentOpponent = null; // Clear opponent after battle
+            startArenaBattleButton.classList.add('hidden'); // Hide battle button
+
+            await savePlayerData();
+            updateArenaUI();
+            updateUI(); // To refresh player stats
+        }
+
+        /**
+         * Buys gold using arena points.
+         * @param {number} arenaCost - The number of arena points required.
+         * @param {number} goldReward - The amount of gold received.
+         */
+        async function buyGoldWithArenaPoints(arenaCost, goldReward) {
+            if (playerArenaStats.points < arenaCost) {
+                showMessageBox("Points insuffisants", `Vous avez besoin de ${arenaCost} points d'arène pour acheter cet or.`);
+                return;
+            }
+
+            playerArenaStats.points -= arenaCost;
+            playerGold += goldReward;
+
+            await savePlayerData();
+            updateArenaUI();
+            updateUI();
+            showMessageBox("Achat réussi !", `Vous avez échangé ${arenaCost} points d'arène contre ${goldReward} Or.`);
+        }
+
+        /**
+         * Updates the UI for arena mode.
+         */
+        function updateArenaUI() {
+            arenaWinsSpan.textContent = playerArenaStats.wins;
+            arenaLossesSpan.textContent = playerArenaStats.losses;
+            arenaPointsSpan.textContent = playerArenaStats.points;
+            if (!currentOpponent) {
+                opponentDisplay.textContent = "Cliquez sur \"Rechercher\" pour trouver un adversaire.";
+                startArenaBattleButton.classList.add('hidden');
+            }
+            updateArenaSearchCostUI(); // Always update search cost UI
+        }
+
+
+        // --- DUNGEON MODE LOGIC ---
+
+        /**
+         * Enters the dungeon with the current team.
+         */
+        async function enterDungeon() {
+            if (playerDungeonState.active) {
+                showMessageBox("Donjon déjà actif", "Vous êtes déjà dans le donjon. Continuez l'exploration ou fuyez.");
+                return;
+            }
+            if (teamHeroIds.length === 0) {
+                showMessageBox("Équipe vide", "Veuillez ajouter des héros à votre équipe principale pour entrer dans le donjon.");
+                return;
+            }
+            // Check if any hero is busy
+            for (const heroId of teamHeroIds) {
+                if (isHeroBusy(heroId)) {
+                    showMessageBox("Héros occupé", "Un ou plusieurs héros de votre équipe sont déjà occupés et ne peuvent pas entrer dans le donjon.");
+                    return;
+                }
+            }
+
+
+            playerDungeonState.active = true;
+            playerDungeonState.currentFloor = 1;
+            playerDungeonState.accumulatedGold = 0;
+            playerDungeonState.heroHpMap = {};
+            playerDungeonState.maxHpMap = {};
+            playerDungeonState.dungeonTeamHeroIds = [...teamHeroIds]; // Clone team for dungeon
+
+            // Initialize HP for heroes entering dungeon
+            playerDungeonState.dungeonTeamHeroIds.forEach(heroId => {
+                const hero = playerHeroes.find(h => h.id === heroId);
+                if (hero) {
+                    playerDungeonState.heroHpMap[heroId] = hero.stats.hp;
+                    playerDungeonState.maxHpMap[heroId] = hero.stats.hp;
+                }
+            });
+
+            await savePlayerData();
+            updateDungeonUI();
+            updateUI(); // Update hero inventory display
+            showMessageBox("Donjon entré !", `Vous êtes entré dans le Donjon à l'étage 1. Bonne chance !`);
+            dungeonEnemyDescription.textContent = ''; // Clear description on new dungeon entry
+        }
+
+        /**
+         * Simulates fighting the current dungeon floor.
+         */
+        async function fightDungeonFloor() {
+            if (!playerDungeonState.active) {
+                showMessageBox("Donjon inactif", "Veuillez entrer dans le donjon d'abord.");
+                return;
+            }
+
+            const teamPower = calculateTeamPower(playerDungeonState.dungeonTeamHeroIds);
+            let totalHeroHp = playerDungeonState.dungeonTeamHeroIds.reduce((sum, heroId) => sum + playerDungeonState.heroHpMap[heroId], 0);
+
+            // Simple enemy power based on floor
+            const enemyPower = playerDungeonState.currentFloor * 100 + 500; // Scaled enemy power
+
+            let damageTaken = Math.max(0, enemyPower - teamPower / 2); // Less damage if team has high ATK
+            if (damageTaken > totalHeroHp) damageTaken = totalHeroHp; // Prevent overheal/too much damage
+
+            // Distribute damage randomly among heroes
+            let livingHeroes = playerDungeonState.dungeonTeamHeroIds.filter(id => playerDungeonState.heroHpMap[id] > 0);
+            if (livingHeroes.length === 0) {
+                showMessageBox("Défaite !", "Votre équipe a été vaincue dans le donjon. Fuite automatique.");
+                await retreatDungeon(true); // Auto retreat on defeat
+                return;
+            }
+
+            for (let i = 0; i < damageTaken; i++) {
+                if (livingHeroes.length === 0) break;
+                const randomHeroId = livingHeroes[Math.floor(Math.random() * livingHeroes.length)];
+                playerDungeonState.heroHpMap[randomHeroId]--;
+                if (playerDungeonState.heroHpMap[randomHeroId] <= 0) {
+                    playerDungeonState.heroHpMap[randomHeroId] = 0;
+                    livingHeroes = livingHeroes.filter(id => id !== randomHeroId); // Remove defeated hero
+                }
+            }
+
+            if (livingHeroes.length === 0) {
+                 showMessageBox("Défaite !", "Votre équipe a été vaincue dans le donjon. Fuite automatique.");
+                 await retreatDungeon(true); // Auto retreat on defeat
+                 return;
+            }
+
+            // Successfully cleared floor
+            playerDungeonState.accumulatedGold += DUNGEON_FLOOR_GOLD_REWARD * playerDungeonState.currentFloor; // More gold for higher floors
+            playerDungeonState.currentFloor++;
+
+            // Small HP regen after each floor for living heroes
+            livingHeroes.forEach(heroId => {
+                playerDungeonState.heroHpMap[heroId] = Math.min(playerDungeonState.maxHpMap[heroId], playerDungeonState.heroHpMap[heroId] + 5);
+            });
+
+
+            await savePlayerData();
+            updateDungeonUI();
+            dungeonEnemyDescription.textContent = ''; // Clear description after fighting floor
+
+            // Update daily quest for dungeon floors
+            updateDailyQuestProgress('dungeonFloors', 1);
+
+            if (playerDungeonState.currentFloor > DUNGEON_MAX_FLOOR) {
+                showMessageBox("Donjon terminé !", `Vous avez vaincu le Donjon ! Vous avez gagné ${playerDungeonState.accumulatedGold} Or.`);
+                await retreatDungeon(false); // Auto retreat on dungeon completion
+            } else {
+                showMessageBox("Étage terminé !", `Vous avez terminé l'étage ${playerDungeonState.currentFloor - 1}. Prochain étage: ${playerDungeonState.currentFloor}.`);
+            }
+        }
+
+        /**
+         * Heals the dungeon team for a cost.
+         */
+        async function healDungeonTeam() {
+            if (!playerDungeonState.active) {
+                showMessageBox("Donjon inactif", "Vous n'êtes pas dans le donjon.");
+                return;
+            }
+            if (playerGold < DUNGEON_HEAL_COST) {
+                showMessageBox("Pas assez d'or", `Vous avez besoin de ${DUNGEON_HEAL_COST} Or pour soigner votre équipe.`);
+                return;
+            }
+
+            playerGold -= DUNGEON_HEAL_COST;
+            playerDungeonState.dungeonTeamHeroIds.forEach(heroId => {
+                const maxHp = playerDungeonState.maxHpMap[heroId];
+                playerDungeonState.heroHpMap[heroId] = maxHp; // Full heal
+            });
+
+            await savePlayerData();
+            updateDungeonUI();
+            updateUI(); // Update gold display
+            showMessageBox("Équipe soignée !", "Votre équipe a été entièrement soignée.");
+        }
+
+        /**
+         * Retreats from the dungeon and collects accumulated gold.
+         * @param {boolean} isDefeat - True if retreating due to defeat.
+         */
+        async function retreatDungeon(isDefeat = false) {
+            if (!playerDungeonState.active) {
+                showMessageBox("Donjon inactif", "Vous n'êtes pas dans le donjon.");
+                return;
+            }
+
+            playerGold += playerDungeonState.accumulatedGold;
+            const collected = playerDungeonState.accumulatedGold;
+
+            // Reset dungeon state
+            playerDungeonState = { active: false, currentFloor: 0, accumulatedGold: 0, heroHpMap: {}, dungeonTeamHeroIds: [], maxHpMap: {} };
+
+            await savePlayerData();
+            updateDungeonUI();
+            updateUI(); // Update gold and inventory status
+            if (!isDefeat) {
+                showMessageBox("Fuite réussie !", `Vous avez fui le donjon avec ${collected} Or.`);
+            } else {
+                showMessageBox("Défaite !", `Votre équipe a été vaincue dans le donjon et a fui avec ${collected} Or.`);
+            }
+            dungeonEnemyDescription.textContent = ''; // Clear description on retreat
+        }
+
+        /**
+         * Generates a description for the current dungeon enemy using Gemini API.
+         */
+        async function generateEnemyDescription() {
+            if (!playerDungeonState.active) {
+                showMessageBox("Donjon inactif", "Vous devez être dans le donjon pour générer une description d'ennemi.");
+                return;
+            }
+
+            dungeonEnemyDescription.textContent = ''; // Clear previous description
+            dungeonEnemyDescriptionLoading.classList.remove('hidden'); // Show loading spinner
+
+            const currentFloor = playerDungeonState.currentFloor;
+            const enemyPower = currentFloor * 100 + 500; // Scaled enemy power
+
+            const prompt = `Générez une description courte et atmosphérique (environ 30-50 mots) pour l'ennemi que l'on pourrait rencontrer à l'étage ${currentFloor} d'un donjon RPG. La puissance de l'ennemi est d'environ ${enemyPower}. Rendez la description mystérieuse ou menaçante, adaptée à un jeu fantastique.`;
+            
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = "AIzaSyDsyjdlwH2HYVVfgRNAeIYjyQqeym5sqFs"; // Your API key is inserted here
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const description = result.candidates[0].content.parts[0].text;
+                    dungeonEnemyDescription.textContent = description;
+                } else {
+                    dungeonEnemyDescription.textContent = "Impossible de générer la description de l'ennemi. Veuillez réessayer.";
+                    console.error("Structure de réponse inattendue de l'API Gemini:", result);
+                }
+            } catch (error) {
+                console.error("Erreur lors de l'appel à l'API Gemini pour la description d'ennemi:", error);
+                dungeonEnemyDescription.textContent = "Erreur de connexion à l'IA. Veuillez vérifier votre connexion.";
+            } finally {
+                loadingElement.classList.add('hidden'); // Hide loading spinner
+            }
+        }
+
+
+        /**
+         * Updates the UI for dungeon mode.
+         */
+        function updateDungeonUI() {
+            dungeonCurrentFloorSpan.textContent = playerDungeonState.currentFloor;
+            dungeonAccumulatedGoldSpan.textContent = playerDungeonState.accumulatedGold;
+
+            if (playerDungeonState.active) {
+                enterDungeonButton.classList.add('hidden');
+                fightDungeonButton.classList.remove('hidden');
+                healDungeonButton.classList.remove('hidden');
+                retreatDungeonButton.classList.remove('hidden');
+                generateEnemyDescriptionButton.classList.remove('hidden'); // Show generate enemy description button
+
+                fightButtonFloorSpan.textContent = playerDungeonState.currentFloor;
+
+                let heroHealthHtml = '';
+                let allHeroesDefeated = true;
+                playerDungeonState.dungeonTeamHeroIds.forEach(heroId => {
+                    const hero = playerHeroes.find(h => h.id === heroId);
+                    if (hero) {
+                        const currentHp = playerDungeonState.heroHpMap[heroId];
+                        const maxHp = playerDungeonState.maxHpMap[heroId];
+                        const hpColor = currentHp <= maxHp / 4 ? 'text-red-500' : (currentHp <= maxHp / 2 ? 'text-yellow-500' : 'text-green-500');
+                        heroHealthHtml += `<p>${hero.name}: <span class="${hpColor}">${currentHp}/${maxHp} HP</span></p>`;
+                        if (currentHp > 0) allHeroesDefeated = false;
+                    }
+                });
+                dungeonHeroHealthDisplay.innerHTML = heroHealthHtml;
+
+                if (allHeroesDefeated && playerDungeonState.dungeonTeamHeroIds.length > 0) {
+                    dungeonEnemyPowerDisplay.textContent = "Votre équipe a été vaincue.";
+                    fightDungeonButton.disabled = true;
+                    healDungeonButton.disabled = true;
+                    generateEnemyDescriptionButton.disabled = true;
+                } else if (playerDungeonState.currentFloor <= DUNGEON_MAX_FLOOR) {
+                     dungeonEnemyPowerDisplay.textContent = `Ennemis à l'étage ${playerDungeonState.currentFloor}: Puissance estimée ${playerDungeonState.currentFloor * 100 + 500}`; // Scaled enemy power
+                     fightDungeonButton.disabled = false;
+                     healDungeonButton.disabled = false;
+                     generateEnemyDescriptionButton.disabled = false;
+                } else {
+                    dungeonEnemyPowerDisplay.textContent = "Donjon terminé !";
+                    fightDungeonButton.disabled = true;
+                    healDungeonButton.disabled = true;
+                    generateEnemyDescriptionButton.disabled = true;
+                }
+
+
+            } else {
+                enterDungeonButton.classList.remove('hidden');
+                fightDungeonButton.classList.add('hidden');
+                healDungeonButton.classList.add('hidden');
+                retreatDungeonButton.classList.add('hidden');
+                generateEnemyDescriptionButton.classList.add('hidden'); // Hide button when not in dungeon
+                dungeonHeroHealthDisplay.textContent = '';
+                dungeonEnemyPowerDisplay.textContent = ''; // Clear enemy power
+                dungeonEnemyDescription.textContent = ''; // Clear enemy description
+                dungeonEnemyDescriptionLoading.classList.add('hidden'); // Hide loading spinner
+                dungeonEnemyPowerDisplay.textContent = 'Entrez dans le donjon pour commencer votre aventure !';
+            }
+        }
+
+
+        // --- STORY QUESTS MODE LOGIC ---
+
+        /**
+         * Finds the next available story quest for the player.
+         * @returns {object|null} The next quest object, or null if all quests are completed.
+         */
+        function getNextStoryQuest() {
+            // Filter quests that are in the current or future chapters and not yet completed
+            const availableQuests = STORY_QUESTS_DATA.filter(
+                quest => quest.chapter >= playerStoryState.currentChapter &&
+                         !playerStoryState.completedQuestIds.includes(quest.id)
+            );
+
+            // Sort them by chapter and then by ID (or a predefined order if available)
+            availableQuests.sort((a, b) => {
+                if (a.chapter !== b.chapter) {
+                    return a.chapter - b.chapter;
+                }
+                // Fallback to alphabetical sort by name if chapters are the same
+                return a.name.localeCompare(b.name);
+            });
+
+            return availableQuests.length > 0 ? availableQuests[0] : null;
+        }
+
+        /**
+         * Updates the UI for Story Quests mode.
+         */
+        function updateStoryUI() {
+            storyCurrentChapterSpan.textContent = playerStoryState.currentChapter;
+            const nextQuest = getNextStoryQuest();
+
+            storyNarrativeDisplay.classList.add('hidden'); // Hide narrative by default
+            storyNarrativeDisplay.textContent = ''; // Clear narrative content
+            storyNarrativeLoading.classList.add('hidden'); // Hide loading spinner for narrative
+
+            if (nextQuest) {
+                storyNextQuestNameSpan.textContent = nextQuest.name;
+                storyQuestDescriptionSpan.textContent = nextQuest.description;
+                storyQuestRequiredPowerSpan.textContent = `${nextQuest.requiredPower} ATK`;
+
+                let rewardsText = `Or: ${nextQuest.rewards.gold}`;
+                if (nextQuest.rewards.items && nextQuest.rewards.items.length > 0) {
+                    rewardsText += `, Objets: ${nextQuest.rewards.items.join(', ')}`;
+                }
+                if (nextQuest.rewards.newHeroChance) {
+                    rewardsText += `, Chance de Héros ${nextQuest.rewards.newHeroChance}`;
+                }
+                storyQuestRewardsDiv.textContent = rewardsText;
+                startStoryQuestButton.disabled = false;
+                startStoryQuestButton.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            } else {
+                storyNextQuestNameSpan.textContent = "Toutes les quêtes terminées !";
+                storyQuestDescriptionSpan.textContent = "Félicitations, vous avez accompli toutes les quêtes d'histoire disponibles. Attendez les nouvelles aventures !";
+                storyQuestRequiredPowerSpan.textContent = "N/A";
+                storyQuestRewardsDiv.textContent = "N/A";
+                startStoryQuestButton.disabled = true;
+                startStoryQuestButton.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            completedStoryQuestsList.innerHTML = '';
+            const completedQuestObjects = STORY_QUESTS_DATA.filter(quest => playerStoryState.completedQuestIds.includes(quest.id));
+            if (completedQuestObjects.length > 0) {
+                // Sort completed quests by chapter and then by name for better display
+                completedQuestObjects.sort((a, b) => {
+                    if (a.chapter !== b.chapter) return a.chapter - b.chapter;
+                    return a.name.localeCompare(b.name);
+                });
+
+                completedQuestObjects.forEach(quest => {
+                    const li = document.createElement('li');
+                    li.textContent = `- ${quest.name} (Chapitre ${quest.chapter}) - Terminé`;
+                    completedStoryQuestsList.appendChild(li);
+                });
+            } else {
+                completedStoryQuestsList.innerHTML = '<li>Aucune quête terminée pour l\'instant.</li>';
+            }
+        }
+
+        /**
+         * Starts a story quest.
+         */
+        async function startStoryQuest() {
+            const nextQuest = getNextStoryQuest();
+            if (!nextQuest) {
+                showMessageBox("Quêtes terminées", "Il n'y a plus de quêtes d'histoire disponibles pour l'instant.");
+                return;
+            }
+            if (teamHeroIds.length === 0) {
+                showMessageBox("Équipe vide", "Veuillez ajouter des héros à votre équipe principale pour démarrer une quête d'histoire.");
+                return;
+            }
+            // Check if any hero is busy in dungeon
+            for (const heroId of teamHeroIds) {
+                if (isHeroBusy(heroId)) {
+                    showMessageBox("Héros occupé", "Un ou plusieurs héros de votre équipe sont déjà occupés et ne peuvent pas démarrer la quête.");
+                    return;
+                }
+            }
+
+            const teamPower = calculateTeamPower();
+            if (teamPower < nextQuest.requiredPower) {
+                showMessageBox("Puissance insuffisante", `Votre équipe a besoin d'au moins ${nextQuest.requiredPower} ATK pour cette quête.`);
+                return;
+            }
+
+            storyNarrativeDisplay.classList.remove('hidden');
+            storyNarrativeDisplay.textContent = ''; // Clear previous narrative
+            storyNarrativeLoading.classList.remove('hidden'); // Show loading spinner
+
+            let questSuccess = false;
+
+            // Simple combat simulation for story quest
+            const playerEffectivePower = teamPower * (1 + (Math.random() * 0.2 - 0.1)); // +/- 10% randomness
+            const enemyEffectivePower = nextQuest.enemyPower * (1 + (Math.random() * 0.2 - 0.1));
+
+            if (playerEffectivePower >= enemyEffectivePower) {
+                questSuccess = true;
+                playerGold += nextQuest.rewards.gold;
+                if (nextQuest.rewards.items) {
+                    showMessageBox("Récompense d'objet", `Vous avez obtenu : ${nextQuest.rewards.items.join(', ')}`);
+                }
+                if (nextQuest.rewards.newHeroChance) {
+                    const newHero = getRandomHeroByRarity(nextQuest.rewards.newHeroChance);
+                    playerHeroes.push(newHero);
+                    showMessageBox("Nouveau Héros !", `Vous avez recruté ${newHero.name} (${newHero.rarity}) !`);
+                }
+                playerStoryState.completedQuestIds.push(nextQuest.id);
+
+                // Check if all quests in current chapter are completed
+                const questsInCurrentChapter = STORY_QUESTS_DATA.filter(q => q.chapter === playerStoryState.currentChapter);
+                const completedQuestsInCurrentChapter = questsInCurrentChapter.filter(q => playerStoryState.completedQuestIds.includes(q.id));
+                if (completedQuestsInCurrentChapter.length === questsInCurrentChapter.length) {
+                    playerStoryState.currentChapter++; // Advance to next chapter
+                    // Ensure the new chapter is correctly updated even if no quests are left
+                    if (getNextStoryQuest() === null && playerStoryState.currentChapter <= STORY_QUESTS_DATA.map(q => q.chapter).sort((a,b)=>b-a)[0]) {
+                        // This case handles where a chapter might be "empty" if quests were designed like that,
+                        // or if the last quest of the game was completed. For now, we assume there's always a next quest/chapter.
+                    }
+                    showMessageBox("Chapitre terminé !", `Vous avez terminé toutes les quêtes du Chapitre ${playerStoryState.currentChapter - 1}. Le Chapitre ${playerStoryState.currentChapter} est maintenant débloqué !`);
+                }
+                updateDailyQuestProgress('storyQuest', 1); // Update daily quest for starting story quest
+            } else {
+                questSuccess = false;
+                showMessageBox("Quête échouée", "Votre équipe n'était pas assez forte pour cette quête. Renforcez-vous et réessayez !");
+            }
+
+            await savePlayerData();
+            updateUI();
+            updateStoryUI(); // Update UI to reflect changes
+
+            // Generate narrative using LLM
+            generateStoryNarrative(nextQuest, questSuccess, teamPower, storyNarrativeDisplay, storyNarrativeLoading);
+        }
+
+        /**
+         * Generates a narrative for the completed story quest using Gemini API.
+         * @param {object} quest - The quest object.
+         * @param {boolean} success - True if the quest was successful, false otherwise.
+         * @param {number} teamPower - The player's team power during the quest.
+         * @param {HTMLElement} displayElement - The DOM element to display the narrative.
+         * @param {HTMLElement} loadingElement - The DOM element for the loading spinner.
+         */
+        async function generateStoryNarrative(quest, success, teamPower, displayElement, loadingElement) {
+            displayElement.textContent = ''; // Clear previous narrative
+            loadingElement.classList.remove('hidden'); // Show loading spinner
+
+            const outcome = success ? "avec succès et a triomphé" : "avec des difficultés et a malheureusement échoué";
+            const rewardsText = success ? ` et a obtenu ${quest.rewards.gold} Or, et potentiellement des objets ou un nouveau héros.` : ".";
+            const heroNames = teamHeroIds.map(id => playerHeroes.find(h => h.id === id)?.name || 'un héros inconnu').join(', ');
+
+            const prompt = `Écrivez un court récit d'aventure détaillé (environ 100-150 mots) pour la quête d'histoire "${quest.name}" du chapitre ${quest.chapter}. Votre équipe de héros (${heroNames}), d'une puissance de ${teamPower}, a affronté un ennemi puissant (puissance de ${quest.enemyPower}) au cours de la quête. L'équipe a terminé la quête ${outcome}${rewardsText} Décrivez les faits marquants de cette quête épique, en mettant l'accent sur les actions des héros et l'ambiance de l'environnement de la quête ("${quest.description.split('.')[0]}").`;
+            
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = "AIzaSyDsyjdlwH2HYVVfgRNAeIYjyQqeym5sqFs"; // Your API key is inserted here
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const narrative = result.candidates[0].content.parts[0].text;
+                    displayElement.textContent = narrative;
+                } else {
+                    displayElement.textContent = "Impossible de générer le récit d'histoire. Veuillez réessayer.";
+                    console.error("Structure de réponse inattendue de l'API Gemini pour le récit d'histoire:", result);
+                }
+            } catch (error) {
+                console.error("Erreur lors de l'appel à l'API Gemini pour le récit d'histoire:", error);
+                displayElement.textContent = "Erreur de connexion à l'IA pour le récit d'histoire. Veuillez vérifier votre connexion.";
+            } finally {
+                loadingElement.classList.add('hidden'); // Hide loading spinner
+            }
+        }
+
+        // --- FORGE MODE LOGIC ---
+
+        /**
+         * Updates the UI for Forge mode.
+         */
+        function updateForgeUI() {
+            // Populate the dropdown with heroes not currently in team or dungeon
+            forgeHeroSelect.innerHTML = '<option value="">-- Sélectionnez un héros --</option>';
+            const forgeableHeroes = playerHeroes.filter(hero => !teamHeroIds.includes(hero.id) && !isHeroBusy(hero.id));
+
+            forgeableHeroes.forEach(hero => {
+                const option = document.createElement('option');
+                option.value = hero.id;
+                option.textContent = `${hero.name} (${hero.rarity}) - Niv.Amél: ${hero.upgradeLevel || 0}`;
+                forgeHeroSelect.appendChild(option);
+            });
+
+            // If a hero is selected, update details
+            if (selectedHeroForForge) {
+                const hero = playerHeroes.find(h => h.id === selectedHeroForForge.id);
+                if (hero) {
+                    selectedForgeHeroDisplay.classList.remove('hidden');
+                    selectedForgeHeroDisplay.classList.add('flex');
+                    forgeHeroImage.src = hero.imageUrl;
+                    forgeHeroImage.onerror = () => { forgeHeroImage.src = 'https://placehold.co/80x80/A0AEC0/FFFFFF?text=?'; };
+                    forgeHeroName.textContent = hero.name;
+                    forgeHeroRarity.textContent = hero.rarity;
+                    forgeHeroRarity.className = `text-md text-blue-700 rarity-${hero.rarity.toLowerCase()}`;
+                    forgeHeroCurrentStats.textContent = `ATK: ${hero.stats.atk} DEF: ${hero.stats.def} HP: ${hero.stats.hp}`;
+                    forgeHeroUpgradeLevel.textContent = hero.upgradeLevel || 0;
+
+                    const nextLevelStats = calculateNextForgeStats(hero);
+                    forgeHeroNextStats.textContent = `Prochain Niveau: ATK: ${nextLevelStats.atk} DEF: ${nextLevelStats.def} HP: ${nextLevelStats.hp}`;
+                    forgeCost.textContent = calculateForgeCost(hero);
+
+                    upgradeHeroButton.disabled = playerGold < calculateForgeCost(hero);
+                    if (hero.upgradeLevel >= getMaxForgeLevel(hero.rarity)) {
+                        upgradeHeroButton.disabled = true;
+                        forgeHeroNextStats.textContent = "Niveau d'amélioration maximum atteint !";
+                    }
+                    upgradeHeroButton.classList.toggle('opacity-50', upgradeHeroButton.disabled);
+                    upgradeHeroButton.classList.toggle('cursor-not-allowed', upgradeHeroButton.disabled);
+                } else {
+                    // Selected hero no longer exists or is busy, reset display
+                    selectedForgeHeroDisplay.classList.add('hidden');
+                    forgeHeroSelect.value = "";
+                    upgradeHeroButton.disabled = true;
+                    selectedHeroForForge = null;
+                    forgeCost.textContent = 0;
+                }
+            } else {
+                selectedForgeHeroDisplay.classList.add('hidden');
+                upgradeHeroButton.disabled = true;
+                forgeCost.textContent = 0;
+            }
+        }
+
+        /**
+         * Calculates the cost to upgrade a hero.
+         * @param {object} hero - The hero to calculate cost for.
+         * @returns {number} The gold cost.
+         */
+        function calculateForgeCost(hero) {
+            const baseCosts = {
+                "Common": 1000,
+                "Rare": 3000,
+                "Epic": 8000,
+                "Legendary": 20000,
+                "Ancient": 50000,
+                "Divine": 100000
+            };
+            const currentLevel = hero.upgradeLevel || 0;
+            const baseCost = baseCosts[hero.rarity] || 1000;
+            return Math.floor(baseCost * (1 + currentLevel * 0.3)); // Cost increases by 30% per level
+        }
+
+        /**
+         * Calculates the stats of a hero after the next upgrade.
+         * @param {object} hero - The hero to calculate stats for.
+         * @returns {object} Object with projected ATK, DEF, HP.
+         */
+        function calculateNextForgeStats(hero) {
+            const currentStats = { ...hero.stats }; // Clone to avoid modifying original
+            const nextAtk = currentStats.atk + 2;
+            const nextDef = currentStats.def + 1;
+            const nextHp = currentStats.hp + 10;
+            return { atk: nextAtk, def: nextDef, hp: nextHp };
+        }
+
+        /**
+         * Gets the maximum forge level for a given rarity.
+         * @param {string} rarity - The rarity of the hero.
+         * @returns {number} The maximum forge level.
+         */
+        function getMaxForgeLevel(rarity) {
+            const maxLevels = {
+                "Common": 10,
+                "Rare": 15,
+                "Epic": 20,
+                "Legendary": 25,
+                "Ancient": 30,
+                "Divine": 35
+            };
+            return maxLevels[rarity] || 10; // Default max level
+        }
+
+        /**
+         * Performs the hero upgrade action.
+         */
+        async function upgradeSelectedHero() {
+            if (!selectedHeroForForge) {
+                showMessageBox("Erreur", "Veuillez sélectionner un héros à améliorer.");
+                return;
+            }
+
+            const heroIndex = playerHeroes.findIndex(h => h.id === selectedHeroForForge.id);
+            if (heroIndex === -1) {
+                showMessageBox("Erreur", "Le héros sélectionné n'a pas été trouvé dans votre inventaire.");
+                return;
+            }
+
+            const hero = playerHeroes[heroIndex];
+            const cost = calculateForgeCost(hero);
+            const maxLevel = getMaxForgeLevel(hero.rarity);
+
+            if (hero.upgradeLevel >= maxLevel) {
+                showMessageBox("Niveau Max", `${hero.name} a déjà atteint son niveau d'amélioration maximum (${maxLevel}).`);
+                return;
+            }
+
+            if (playerGold < cost) {
+                showMessageBox("Pas assez d'Or !", `Vous avez besoin de ${cost} Or pour améliorer ${hero.name}.`);
+                return;
+            }
+
+            playerGold -= cost;
+            hero.stats.atk += 2;
+            hero.stats.def += 1;
+            hero.stats.hp += 10;
+            hero.upgradeLevel = (hero.upgradeLevel || 0) + 1;
+
+            playerHeroes[heroIndex] = hero; // Update the hero in the array
+
+            await savePlayerData();
+            updateUI(); // Refresh inventory and gold
+            updateForgeUI(); // Refresh forge details for selected hero
+            showMessageBox("Héros amélioré !", `${hero.name} a été amélioré au niveau ${hero.upgradeLevel} !`);
+        }
+
+
+        // --- DAILY QUESTS MODE LOGIC ---
+
+        /**
+         * Initializes daily quests for a new player or if data is missing.
+         */
+        function initializeDailyQuests() {
+            playerDailyQuests = {
+                lastReset: Date.now(),
+                quests: {}
+            };
+            for (const key in DAILY_QUESTS_DEFINITIONS) {
+                playerDailyQuests.quests[key] = { progress: 0, completed: false, claimed: false };
+            }
+        }
+
+        /**
+         * Checks if daily quests need to be reset and performs reset if necessary.
+         */
+        async function checkAndResetDailyQuests() {
+            const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+            const now = Date.now();
+
+            if (now - playerDailyQuests.lastReset >= oneDay) {
+                console.log("Réinitialisation des quêtes quotidiennes...");
+                playerDailyQuests.lastReset = now;
+                for (const key in DAILY_QUESTS_DEFINITIONS) {
+                    playerDailyQuests.quests[key] = { progress: 0, completed: false, claimed: false };
+                }
+                await savePlayerData();
+                updateDailyQuestsUI();
+                showMessageBox("Quêtes Quotidiennes réinitialisées !", "De nouvelles quêtes quotidiennes vous attendent !");
+            }
+        }
+
+        /**
+         * Updates progress for a specific daily quest.
+         * @param {string} questType - The type of quest (e.g., 'summonHero').
+         * @param {number} amount - The amount to increment progress by.
+         */
+        async function updateDailyQuestProgress(questType, amount) {
+            if (!playerDailyQuests.quests[questType]) {
+                console.warn(`Type de quête quotidienne inconnu: ${questType}`);
+                return;
+            }
+            const quest = playerDailyQuests.quests[questType];
+            const definition = DAILY_QUESTS_DEFINITIONS[questType];
+
+            if (!quest.completed && !quest.claimed) {
+                quest.progress += amount;
+                if (quest.progress >= definition.target) {
+                    quest.progress = definition.target; // Cap progress at target
+                    quest.completed = true;
+                    // Don't show message box here, let UI update handle it later for better flow
+                }
+                await savePlayerData();
+                updateDailyQuestsUI(); // Update UI immediately
+            }
+        }
+
+        /**
+         * Claims rewards for a completed daily quest.
+         * @param {string} questType - The type of quest to claim rewards for.
+         */
+        async function claimDailyQuestReward(questType) {
+            if (!playerDailyQuests.quests[questType]) {
+                showMessageBox("Erreur", "Cette quête n'existe pas.");
+                return;
+            }
+            const quest = playerDailyQuests.quests[questType];
+            const definition = DAILY_QUESTS_DEFINITIONS[questType];
+
+            if (!quest.completed) {
+                showMessageBox("Non terminée", "Cette quête n'est pas encore terminée.");
+                return;
+            }
+            if (quest.claimed) {
+                showMessageBox("Déjà réclamé", "La récompense pour cette quête a déjà été réclamée.");
+                return;
+            }
+
+            playerGold += definition.rewardGold;
+            quest.claimed = true; // Mark as claimed
+
+            await savePlayerData();
+            updateUI(); // Update gold display
+            updateDailyQuestsUI();
+            showMessageBox("Récompense collectée !", `Vous avez collecté ${definition.rewardGold} Or de la quête "${definition.description}" !`);
+        }
+
+        /**
+         * Updates the UI for Daily Quests mode.
+         */
+        function updateDailyQuestsUI() {
+            dailyQuestsListDiv.innerHTML = ''; // Clear existing quests
+
+            for (const key in DAILY_QUESTS_DEFINITIONS) {
+                const definition = DAILY_QUESTS_DEFINITIONS[key];
+                const questState = playerDailyQuests.quests[key];
+
+                const questItem = document.createElement('div');
+                questItem.classList.add('flex', 'flex-col', 'sm:flex-row', 'justify-between', 'items-center', 'p-3', 'bg-gray-100', 'rounded-lg');
+                
+                let statusText = '';
+                let buttonHtml = '';
+                let textColor = 'text-gray-700';
+
+                if (questState.claimed) {
+                    statusText = 'Réclamée';
+                    textColor = 'text-green-600';
+                } else if (questState.completed) {
+                    statusText = 'Terminée !';
+                    textColor = 'text-blue-600';
+                    buttonHtml = `<button class="button-primary text-sm p-2" data-quest-type="${key}">Réclamer (${definition.rewardGold} Or)</button>`;
+                } else {
+                    statusText = `Progression: ${questState.progress}/${definition.target}`;
+                    textColor = 'text-gray-500';
+                }
+
+                questItem.innerHTML = `
+                    <p class="font-semibold ${textColor} mb-2 sm:mb-0">${definition.description}</p>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm ${textColor}">${statusText}</span>
+                        ${buttonHtml}
+                    </div>
+                `;
+                dailyQuestsListDiv.appendChild(questItem);
+
+                // Add event listener for claim button if it exists
+                if (questState.completed && !questState.claimed) {
+                    questItem.querySelector('button').addEventListener('click', (event) => {
+                        claimDailyQuestReward(event.target.dataset.questType);
+                    });
+                }
+            }
+            updateDailyQuestResetTimer();
+        }
+
+        /**
+         * Updates the daily quest reset timer.
+         */
+        function updateDailyQuestResetTimer() {
+            const oneDay = 24 * 60 * 60 * 1000;
+            const nextResetTime = playerDailyQuests.lastReset + oneDay;
+            const remainingTime = nextResetTime - Date.now();
+
+            if (remainingTime > 0) {
+                dailyQuestResetTimerSpan.textContent = formatTime(remainingTime);
+            } else {
+                dailyQuestResetTimerSpan.textContent = "Bientôt réinitialisé...";
+                checkAndResetDailyQuests(); // Force check if timer runs out
+            }
+        }
+
+        /**
+         * Starts the interval to update daily quest timers.
+         */
+        function startDailyQuestTimer() {
+            if (dailyQuestTimerInterval) {
+                clearInterval(dailyQuestTimerInterval);
+            }
+            dailyQuestTimerInterval = setInterval(updateDailyQuestResetTimer, 1000); // Update every second
+        }
+
+        /**
+         * Formats milliseconds into a readable time string (e.g., 01h 30m 15s).
+         * @param {number} ms - Milliseconds.
+         * @returns {string} Formatted time string.
+         */
+        function formatTime(ms) {
+            if (ms < 0) ms = 0;
+            const seconds = Math.floor((ms / 1000) % 60);
+            const minutes = Math.floor((ms / (1000 * 60)) % 60);
+            const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
+            const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+
+            let parts = [];
+            if (days > 0) parts.push(`${days}j`);
+            if (hours > 0) parts.push(`${hours}h`);
+            if (minutes > 0) parts.push(`${minutes}m`);
+            if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`); // Ensure at least seconds are shown
+
+            return parts.join(' ');
+        }
+
+        // --- LEADERBOARD LOGIC ---
+        /**
+         * Renders the leaderboard in the UI.
+         * @param {Array<object>} topPlayers - An array of player objects sorted by arenaPoints.
+         */
+        function renderLeaderboard(topPlayers) {
+            leaderboardList.innerHTML = ''; // Clear current leaderboard
+
+            if (topPlayers.length === 0) {
+                leaderboardList.innerHTML = `<li class="py-2 text-gray-500">Aucun joueur dans le classement pour l'instant.</li>`;
+                return;
+            }
+
+            topPlayers.forEach((player, index) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('py-2', 'border-b', 'border-gray-200', 'last:border-b-0', 'flex', 'justify-between', 'items-center');
+                listItem.innerHTML = `
+                    <span class="font-semibold text-lg text-gray-800">#${index + 1} ${player.playerName || 'Anonyme'}</span>
+                    <span class="text-blue-600 font-bold">${player.arenaPoints} Points</span>
+                `;
+                leaderboardList.appendChild(listItem);
+            });
+        }
+
+
+        /**
+         * Sets up event listeners for buttons.
+         */
+        function setupEventListeners() {
+            // Main Game actions
+            summonBasicButton.addEventListener('click', () => summonHero('basic'));
+            summonAdvancedButton.addEventListener('click', () => summonHero('advanced'));
+            summonLegendaryButton.addEventListener('click', () => summonHero('legendary'));
+            collectTeamGoldButton.addEventListener('click', collectTeamGold);
+
+            // Auth listeners
+            signUpEmailButton.addEventListener('click', signUpWithEmail);
+            signInEmailButton.addEventListener('click', signInWithEmail);
+            signOutButton.addEventListener('click', signOutUser);
+
+            // Nickname Modal listeners
+            saveNicknameButton.addEventListener('click', saveNickname);
+            nicknameInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    saveNickname();
+                }
+            });
+
+            // Gemini Lore Generation listeners
+            generateLoreButtonLast.addEventListener('click', () => {
+                if (currentHeroForLore) {
+                    generateHeroLore(currentHeroForLore, loreDisplayLast, loreLoadingLast);
+                } else {
+                    showMessageBox("Erreur", "Aucun héros invoqué pour générer l'histoire. Invoquez un héros d'abord.");
+                }
+            });
+            generateLoreButtonModal.addEventListener('click', () => {
+                if (currentHeroForLore) {
+                    generateHeroLore(currentHeroForLore, loreDisplayModal, loreLoadingModal);
+                } else {
+                    showMessageBox("Erreur", "Aucun héros sélectionné pour générer l'histoire.");
+                }
+            });
+
+            // Game Mode Tab listeners
+            gameModeTabs.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    switchMode(event.target.dataset.mode);
+                });
+            });
+
+            // Arena Mode listeners
+            findOpponentButton.addEventListener('click', findOpponent);
+            startArenaBattleButton.addEventListener('click', startArenaBattle);
+            buyGoldButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const arenaCost = parseInt(event.target.dataset.arenaCost);
+                    const goldReward = parseInt(event.target.dataset.goldReward);
+                    buyGoldWithArenaPoints(arenaCost, goldReward);
+                });
+            });
+
+            // Dungeon Mode listeners
+            enterDungeonButton.addEventListener('click', enterDungeon);
+            fightDungeonButton.addEventListener('click', fightDungeonFloor);
+            healDungeonButton.addEventListener('click', healDungeonTeam);
+            retreatDungeonButton.addEventListener('click', () => retreatDungeon(false));
+            generateEnemyDescriptionButton.addEventListener('click', generateEnemyDescription);
+
+            // Story Quests Mode listeners
+            startStoryQuestButton.addEventListener('click', startStoryQuest);
+
+            // Forge Mode listeners
+            forgeHeroSelect.addEventListener('change', (event) => {
+                const heroId = event.target.value;
+                selectedHeroForForge = playerHeroes.find(h => h.id === heroId) || null;
+                updateForgeUI(); // Update UI based on selected hero
+            });
+            upgradeHeroButton.addEventListener('click', upgradeSelectedHero);
+
+            // Daily Quests listeners are added dynamically in updateDailyQuestsUI
+        }
+
+        // Initialize the game when the window loads
+        window.onload = function() {
+            initializeFirebaseAndGame();
+            setupEventListeners();
+        };
+    </script>
+</body>
+</html>
